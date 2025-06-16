@@ -1,0 +1,46 @@
+muige ting å lage:
+
+    - tcp, og udp
+    - websocket chat application, over tls
+    - server fra grunnen og opp, bruke node:net
+
+Gode kilder:
+
+Writing WebSocket servers - mdn web docs -
+https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers
+
+Beej's Guide to Network Programming - Using Internet Sockets -
+https://beej.us/guide/bgnet/
+
+protohackers - Server programming challenge. -
+https://protohackers.com/problem/0
+
+What they don't teach you about sockets -
+https://macoy.me/blog/programming/Sockets
+
+Socket Programming in Linux - hitch hiker's guide to learning -
+https://www.hitchhikersguidetolearning.com/socket-programming-in-linux/
+
+Sockets Tutorial - by Robert Ingalls -
+https://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
+
+A Complete Guide to Socket Programming in Go - 
+https://www.kelche.co/blog/go/socket-programming/
+
+A Beginners Guide to Socket Programming in C - 
+https://dev.to/sanjayrv/a-beginners-guide-to-socket-programming-in-c-5an5
+
+END-TO-END ARGUMENTS IN SYSTEM DESIGN -
+https://web.mit.edu/saltzer/www/publications/endtoend/endtoend.pdf
+
+Active Networking and End-To-End Arguments - 
+https://web.mit.edu/saltzer/www/publications/endtoend/ANe2ecomment.pdf
+
+Let us explore sockets programming in JavaScript - 
+https://medium.com/@girish1729/let-us-explore-sockets-programming-in-javascript-62ea356d8581
+
+
+Betalt guide ---
+
+codecrafters - Build your own HTTP server -
+https://app.codecrafters.io/courses/http-server/overview
