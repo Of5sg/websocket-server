@@ -1,0 +1,24 @@
+{
+  "name": "server-types",
+  "version": "1.0.0",
+  "description": "tryng to build different types of servers",
+  "keywords": [
+    "test",
+    "websocket"
+  ],
+  "homepage": "https://github.com/Of5sg/server-types#readme",
+  "bugs": {
+    "url": "https://github.com/Of5sg/server-types/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Of5sg/server-types.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "test": "test"
+  }
+}
