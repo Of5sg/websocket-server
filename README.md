@@ -1,2 +1,3 @@
-# HTTPserv
-Building a HTTP server to understand how they work
+# Server-Types
+
+Bulding different kinds of servers to see how they work, and understand the differences and usecases.
