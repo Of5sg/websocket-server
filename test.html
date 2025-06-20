@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="widt=device-width, initial-scale=1.0">
+        <title>Test-side</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <h3>This is a test page for the server.</h3>
+        <article id="result"></article>
+        <script nonce="{nonce}">
+            const worker = new Worker("websocket_clientside.js");
+            worker.onmessage = function (event) {
+                document.getElementById("result").append(`<p>${event.data}</p>`);
+            }
+        </script>
+    </body>
+</html>
