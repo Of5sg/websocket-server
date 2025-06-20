@@ -22,8 +22,7 @@
 
 */
 
-// window.crypto.getRandomValues()
-
+// window.crypto.getRandomValues();
 
 /*
 1.3.  Opening Handshake
@@ -45,3 +44,9 @@
         Sec-WebSocket-Protocol: chat, superchat
         Sec-WebSocket-Version: 13
 */ 
+
+const socket = new WebSocket("ws://localhost:8000");
+
+socket.addEventListener("open", () => {
+    socket.send("start");
+});
