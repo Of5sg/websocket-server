@@ -45,8 +45,53 @@
         Sec-WebSocket-Version: 13
 */ 
 
-const socket = new WebSocket("ws://localhost:8000");
+// //------------------------------------------
+
+// let socket;
+
+// self.onmessage = (mess) => {
+
+//     console.log(mess);
+
+//     let baseUrl = "";
+
+//     console.log(baseUrl);
+
+//     if(mess.data.split("-:-")[0] === "base_Url#aB29sal2108vnjksdhgmkjfhuiu"){
+    
+//         baseUrl = mess.data.split("-:-")[1];
+    
+//         socket = new WebSocket(`wss://${baseUrl.slice(8)}`);
+    
+//         socket.send("connection established!! :)");
+    
+//     }else{
+    
+//         socket.send(mess.data);
+    
+//     };
+
+// };
+
+// if(socket instanceof WebSocket){
+
+//     socket.addEventListener("open", () => {
+
+//         socket.send("start");
+
+//     });
+
+// };
+
+// //--------------------------------------------
+
+    
+const socket = new WebSocket(`ws://localhost:8000`);
+
+// socket.send("connection established!! :)");
 
 socket.addEventListener("open", () => {
+
     socket.send("start");
+
 });
