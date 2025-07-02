@@ -1,3 +1,3 @@
-# Server-Types
+# Websocket-server
 
-Bulding different kinds of servers to see how they work, and understand the differences and usecases.
+this is a websocket server in node.js, that i wrote in order to learn more about internet protocols
