@@ -85,13 +85,46 @@
 
 // //--------------------------------------------
 
+
+// https://dev.w3.org/2006/webapi/network-api/network-api.html
+
+// https://websockets.spec.whatwg.org/#the-websocket-interface
+
+
+try{
+
+    const socket = new WebSocket(`ws://localhost:8000`);
+    // const socket = new WebSocket(`wss://fluffy-space-cod-q76vgx6qgj5j39vxp-8000.app.github.dev`);
     
-const socket = new WebSocket(`ws://localhost:8000`);
+    socket.addEventListener("close", (mess) => {
+        console.log("Close:\n", mess);
+    });
 
-// socket.send("connection established!! :)");
+    socket.addEventListener("error", (error) => {
+        
+        console.log("Error:\n", error);
 
-socket.addEventListener("open", () => {
+    });
 
-    socket.send("start");
+    socket.addEventListener("message", (message) => {
 
-});
+        console.log(message);
+
+    });
+
+    socket.addEventListener("open", () => {
+
+        console.log("websocket connection opened");
+
+        socket.send("start");
+
+    });
+
+}catch(error){
+
+    console.log(error);
+    
+};
+
+
+ 

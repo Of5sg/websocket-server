@@ -1,8 +1,10 @@
 import net from "net";
 import { Buffer } from "buffer";
 import crypto from "crypto";
-import { isReadable } from "stream";
+import { Duplex, duplexPair, isReadable } from "stream";
 
+// https://nodejs.org/api/cluster.html
+// bruke workere, og cluster????
 
 /**   0                   1                   2                   3
       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -26,10 +28,15 @@ import { isReadable } from "stream";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
+// streams https://nodesource.com/blog/understanding-streams-in-nodejs
+
+
+
 async function getChunk(socket) {
 
     let fullBuffer = Buffer.alloc(0);
 
+    // buffer with \r\n\r\n, for comparison with the end of the incomming buffer
     const endSignal = Buffer.from([13, 10, 13, 10]);
 
     for await (const chunk of socket) {
@@ -38,12 +45,25 @@ async function getChunk(socket) {
 
         if(Buffer.compare(Buffer.copyBytesFrom(fullBuffer, fullBuffer.byteLength-4, 4), endSignal) === 0){
 
-            return fullBuffer;
+            // returng terminates the connection, causes error on clienside
+            // return fullBuffer;
+
+            // yield fullBuffer
+
+            console.log(splitLines(fullBuffer)); 
+
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator
+
+            // https://www.dennisokeeffe.com/blog/2024-07-11-duplex-streams-in-nodejs
+            
+            // fullBuffer.fill(0);
+            // fullBuffer = null;
 
         };
     };
-
 };
+
+
 
 function splitLines(incommingBuff){
 
@@ -78,9 +98,8 @@ function splitLines(incommingBuff){
     return requestObj;    
 }
 
+
 const server = net.createServer(async(socket) => {
-
-
 
     console.log("is readable? :", isReadable(socket), "\n")
 
@@ -123,6 +142,9 @@ const server = net.createServer(async(socket) => {
 
         socket.write(Buffer.from(response));
 
+        // incommingBuff.next()
+
+
     }else{
 
         throw new Error("Socket not readable.");
@@ -132,6 +154,8 @@ const server = net.createServer(async(socket) => {
     socket.once("end", (closingHandshake) => {
 
         console.log(`-----\n\nrecieved closing handshake from:\n\n\tremoteAddress\t${socket.remoteAddress}\n\non:\n\n\tlocalPort\t${socket.localPort}\n\tlocalAddress\t${socket.localAddress}\n\n-----`);
+        
+        // console.log(closingHandshake);
 
     });
 
@@ -145,6 +169,7 @@ const server = net.createServer(async(socket) => {
         console.log("Connection closed.\n");
 
     });
+
 
 });
 
