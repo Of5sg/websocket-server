@@ -45,6 +45,7 @@ import * as events from "node:events";
 // console.log(stuff);
 
 // // // All streams are instances of EventEmitter. https://nodejs.org/docs/latest/api/events.html#class-eventemitter
+
 // console.log("\nNew Duplex:");
 // const connect = new Duplex();
 // console.log(connect);
@@ -85,13 +86,9 @@ async function getChunk(socket) {
             // return terminates the connection, causes error on clienside
             // return fullBuffer;
 
-            // yield fullBuffer
-
             console.log(splitLines(fullBuffer));
 
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator
-
-            // https://www.dennisokeeffe.com/blog/2024-07-11-duplex-streams-in-nodejs
 
             // fullBuffer.fill(0);
             // fullBuffer = null;
