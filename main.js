@@ -73,8 +73,6 @@ async function getChunk(socket) {
 
     let fullBuffer = Buffer.alloc(0);
 
-    console.log(socket);
-
     // buffer with \r\n\r\n, for comparison with the end of the incomming chunk
     const endSignal = Buffer.from([13, 10, 13, 10]);
 
