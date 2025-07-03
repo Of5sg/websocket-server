@@ -2,6 +2,8 @@ import net from "net";
 import { Buffer } from "buffer";
 import crypto from "crypto";
 import Stream, { Duplex, duplexPair, isReadable } from "stream";
+import * as events from "node:events";
+import { sourceMapsEnabled } from "node:process";
 
 // https://nodejs.org/api/cluster.html
 // bruke workere, og cluster????
@@ -31,6 +33,15 @@ import Stream, { Duplex, duplexPair, isReadable } from "stream";
 // streams https://nodesource.com/blog/understanding-streams-in-nodejs
 // how to use streams https://nodejs.org/en/learn/modules/how-to-use-streams
 
+// console.log("\nServer object: ");
+// const serv = new net.Server();
+// console.log(serv);
+
+// console.log("\nEvents:");
+// const evs = events.EventEmitter
+// console.log(evs);
+
+
 // console.log("\nDuplexPair:");
 // let conn = duplexPair();
 // console.log(conn);
@@ -39,14 +50,36 @@ import Stream, { Duplex, duplexPair, isReadable } from "stream";
 // const stuff = new Stream();
 // console.log(stuff);
 
-// // All streams are instances of EventEmitter. https://nodejs.org/docs/latest/api/events.html#class-eventemitter
+// // // All streams are instances of EventEmitter. https://nodejs.org/docs/latest/api/events.html#class-eventemitter
 // console.log("\nNew Duplex:");
 // const connect = new Duplex();
 // console.log(connect);
 
+// // eksempler på implemetasjon av duplex streams https://nodejs.org/api/stream.html#implementing-a-duplex-stream
+
+class CustomDuplex extends Duplex {
+    constructor(source, options) {
+        super(options);
+        this[source] = source;
+    };
+    // vurdere transform streams?? https://nodejs.org/api/stream.html#object-mode-duplex-streams
+    //                             https://nodejs.org/api/stream.html#implementing-a-transform-stream
+    _write(chunk, encoding, callback) {
+
+    };
+    // det er dette jeg trenger: ---
+    // async generatorer/readable streams https://nodejs.org/api/stream.html#creating-readable-streams-with-async-generators
+    //                                    https://nodejs.org/api/stream.html#piping-to-writable-streams-from-async-iterators
+    _read(size){
+
+    };
+};
+
 async function getChunk(socket) {
 
     let fullBuffer = Buffer.alloc(0);
+
+    console.log(socket);
 
     // buffer with \r\n\r\n, for comparison with the end of the incomming chunk
     const endSignal = Buffer.from([13, 10, 13, 10]);
@@ -67,14 +100,13 @@ async function getChunk(socket) {
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator
 
             // https://www.dennisokeeffe.com/blog/2024-07-11-duplex-streams-in-nodejs
-            
+
             // fullBuffer.fill(0);
             // fullBuffer = null;
 
         };
     };
 };
-
 
 function splitLines(incommingBuff){
 
@@ -106,7 +138,8 @@ function splitLines(incommingBuff){
 
     };
 
-    return requestObj;    
+    return requestObj;
+
 };
 
 
@@ -115,6 +148,7 @@ const server = net.createServer(async(socket) => {
     console.log("is readable? :", isReadable(socket), "\n")
 
     // https://nodejs.org/api/stream.html#readableforeachfn-options
+
     // https://nodejs.org/api/stream.html#readable-streams
 
     if(isReadable(socket)){
@@ -133,7 +167,14 @@ const server = net.createServer(async(socket) => {
             .update(requestObj.sec_websocket_key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
             .digest("base64");
 
+        // opening handshake
         // https://datatracker.ietf.org/doc/html/rfc6455#section-1.3
+
+        // reading client handshake
+        // https://datatracker.ietf.org/doc/html/rfc6455#section-4.2.1
+
+        // websocket frames
+        // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
         // create response
         const response = [
@@ -171,8 +212,10 @@ const server = net.createServer(async(socket) => {
     });
 
     socket.on("timeout", () => {
+
         console.log("Connection timed out");
         socket.end();
+
     });
 
     socket.on("close", () => {
@@ -180,8 +223,6 @@ const server = net.createServer(async(socket) => {
         console.log("Connection closed.\n");
 
     });
-
-
 
 });
 
