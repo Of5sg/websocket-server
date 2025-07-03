@@ -1,9 +1,8 @@
 import net from "net";
 import { Buffer } from "buffer";
 import crypto from "crypto";
-import Stream, { Duplex, duplexPair, isReadable } from "stream";
+import Stream, { Duplex, isReadable } from "stream";
 import * as events from "node:events";
-import { sourceMapsEnabled } from "node:process";
 
 // https://nodejs.org/api/cluster.html
 // bruke workere, og cluster????
@@ -40,11 +39,6 @@ import { sourceMapsEnabled } from "node:process";
 // console.log("\nEvents:");
 // const evs = events.EventEmitter
 // console.log(evs);
-
-
-// console.log("\nDuplexPair:");
-// let conn = duplexPair();
-// console.log(conn);
 
 // console.log("\nNew Stream:");
 // const stuff = new Stream();
