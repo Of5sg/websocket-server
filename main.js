@@ -1,7 +1,7 @@
 import net from "net";
 import { Buffer } from "buffer";
 import crypto from "crypto";
-import { Duplex, duplexPair, isReadable } from "stream";
+import Stream, { Duplex, duplexPair, isReadable } from "stream";
 
 // https://nodejs.org/api/cluster.html
 // bruke workere, og cluster????
@@ -29,14 +29,26 @@ import { Duplex, duplexPair, isReadable } from "stream";
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
 // streams https://nodesource.com/blog/understanding-streams-in-nodejs
+// how to use streams https://nodejs.org/en/learn/modules/how-to-use-streams
 
+// console.log("\nDuplexPair:");
+// let conn = duplexPair();
+// console.log(conn);
 
+// console.log("\nNew Stream:");
+// const stuff = new Stream();
+// console.log(stuff);
+
+// // All streams are instances of EventEmitter. https://nodejs.org/docs/latest/api/events.html#class-eventemitter
+// console.log("\nNew Duplex:");
+// const connect = new Duplex();
+// console.log(connect);
 
 async function getChunk(socket) {
 
     let fullBuffer = Buffer.alloc(0);
 
-    // buffer with \r\n\r\n, for comparison with the end of the incomming buffer
+    // buffer with \r\n\r\n, for comparison with the end of the incomming chunk
     const endSignal = Buffer.from([13, 10, 13, 10]);
 
     for await (const chunk of socket) {
@@ -45,12 +57,12 @@ async function getChunk(socket) {
 
         if(Buffer.compare(Buffer.copyBytesFrom(fullBuffer, fullBuffer.byteLength-4, 4), endSignal) === 0){
 
-            // returng terminates the connection, causes error on clienside
+            // return terminates the connection, causes error on clienside
             // return fullBuffer;
 
             // yield fullBuffer
 
-            console.log(splitLines(fullBuffer)); 
+            console.log(splitLines(fullBuffer));
 
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator
 
@@ -62,7 +74,6 @@ async function getChunk(socket) {
         };
     };
 };
-
 
 
 function splitLines(incommingBuff){
@@ -96,7 +107,7 @@ function splitLines(incommingBuff){
     };
 
     return requestObj;    
-}
+};
 
 
 const server = net.createServer(async(socket) => {
@@ -169,6 +180,7 @@ const server = net.createServer(async(socket) => {
         console.log("Connection closed.\n");
 
     });
+
 
 
 });
