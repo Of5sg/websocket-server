@@ -2,26 +2,6 @@ import net from "net";
 import { Buffer } from "buffer";
 import crypto from "crypto";
 
-/**   0                   1                   2                   3
-      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-     +-+-+-+-+-------+-+-------------+-------------------------------+
-     |F|R|R|R| opcode|M| Payload len |    Extended payload length    |
-     |I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |
-     |N|V|V|V|       |S|             |   (if payload len==126/127)   |
-     | |1|2|3|       |K|             |                               |
-     +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
-     |     Extended payload length continued, if payload len == 127  |
-     + - - - - - - - - - - - - - - - +-------------------------------+
-     |                               |Masking-key, if MASK set to 1  |
-     +-------------------------------+-------------------------------+
-     | Masking-key (continued)       |          Payload Data         |
-     +-------------------------------- - - - - - - - - - - - - - - - +
-     :                     Payload Data continued ...                :
-     + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
-     |                     Payload Data continued ...                |
-     +---------------------------------------------------------------+ 
-*/
-
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
 function splitLines(incommingBuff){
@@ -96,6 +76,8 @@ const server = net.createServer(async(socket) => {
         +---------------------------------------------------------------+ 
     */
 
+    // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
+
     socket.on("data", (data) => {
 
         if(websock === true){
@@ -103,6 +85,9 @@ const server = net.createServer(async(socket) => {
             // handeling the websocket frames
 
             console.log("websocket, reading frame...");
+
+            // bitmasker og bit-manipulasjon https://www.learncpp.com/cpp-tutorial/bit-manipulation-with-bitwise-operators-and-bit-masks/
+            // bitwise-operasjoner https://dev.to/stephengade/mastering-bitwise-operations-a-simplified-guide-2031
 
             // where i contain the headers, after dividing them
             const incommingFrame = {};
@@ -154,7 +139,7 @@ const server = net.createServer(async(socket) => {
 
             }else if(incommingFrame.payloadLen === 126){
                 // 16-bit extended payload-len
-                const ext_16_bit_Payload_Len = bits(incommingFrame.payloadLen) + bits(byte3) + bits(byte4);
+                const ext_16_bit_Payload_Len = bits(byte3) + bits(byte4);
                 incommingFrame.payloadLen = parseInt(ext_16_bit_Payload_Len);
 
                 headerLen = 32
@@ -166,7 +151,7 @@ const server = net.createServer(async(socket) => {
                 };
             }else if(incommingFrame.payloadLen === 127){
                 // 64-bit extended payload-len
-                const ext_64_bit_Payload_Len = bits(incommingFrame.payloadLen) + bits(byte3) + bits(byte4) + bits(byte5) + bits(byte6) + bits(byte7) + bits(byte8) + bits(byte9) + bits(byte10);
+                const ext_64_bit_Payload_Len = bits(byte3) + bits(byte4) + bits(byte5) + bits(byte6) + bits(byte7) + bits(byte8) + bits(byte9) + bits(byte10);
                 incommingFrame.payloadLen = parseInt(ext_64_bit_Payload_Len);
                 headerLen = 80;
 
@@ -189,6 +174,7 @@ const server = net.createServer(async(socket) => {
         }else{
 
             // handle http handshake
+            // https://datatracker.ietf.org/doc/html/rfc6455#section-4.2.1
 
             const requestObj = splitLines(data);
 
