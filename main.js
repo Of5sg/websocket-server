@@ -1,11 +1,6 @@
 import net from "net";
 import { Buffer } from "buffer";
 import crypto from "crypto";
-import Stream, { Duplex, isReadable } from "stream";
-import * as events from "node:events";
-
-// https://nodejs.org/api/cluster.html
-// bruke workere, og cluster????
 
 /**   0                   1                   2                   3
       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -29,101 +24,40 @@ import * as events from "node:events";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
-// streams https://nodesource.com/blog/understanding-streams-in-nodejs
-// how to use streams https://nodejs.org/en/learn/modules/how-to-use-streams
-
-// console.log("\nServer object: ");
-// const serv = new net.Server();
-// console.log(serv);
-
-// console.log("\nEvents:");
-// const evs = events.EventEmitter
-// console.log(evs);
-
-// console.log("\nNew Stream:");
-// const stuff = new Stream();
-// console.log(stuff);
-
-// // // All streams are instances of EventEmitter. https://nodejs.org/docs/latest/api/events.html#class-eventemitter
-
-// console.log("\nNew Duplex:");
-// const connect = new Duplex();
-// console.log(connect);
-
-// // eksempler på implemetasjon av duplex streams https://nodejs.org/api/stream.html#implementing-a-duplex-stream
-
-class CustomDuplex extends Duplex {
-    constructor(source, options) {
-        super(options);
-        this[source] = source;
-    };
-    // vurdere transform streams?? https://nodejs.org/api/stream.html#object-mode-duplex-streams
-    //                             https://nodejs.org/api/stream.html#implementing-a-transform-stream
-    _write(chunk, encoding, callback) {
-
-    };
-    // det er dette jeg trenger: ---
-    // async generatorer/readable streams https://nodejs.org/api/stream.html#creating-readable-streams-with-async-generators
-    //                                    https://nodejs.org/api/stream.html#piping-to-writable-streams-from-async-iterators
-    _read(size){
-
-    };
-};
-
-async function getChunk(socket) {
-
-    let fullBuffer = Buffer.alloc(0);
-
-    // buffer with \r\n\r\n, for comparison with the end of the incomming chunk
-    const endSignal = Buffer.from([13, 10, 13, 10]);
-
-    for await (const chunk of socket) {
-
-        fullBuffer = Buffer.concat([fullBuffer, chunk]);
-
-        if(Buffer.compare(Buffer.copyBytesFrom(fullBuffer, fullBuffer.byteLength-4, 4), endSignal) === 0){
-
-            // return terminates the connection, causes error on clienside
-            // return fullBuffer;
-
-            console.log(splitLines(fullBuffer));
-
-            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator
-
-            // fullBuffer.fill(0);
-            // fullBuffer = null;
-
-        };
-    };
-};
-
 function splitLines(incommingBuff){
 
     // convert to strings
-
-    const stringified = incommingBuff.toString();
-    const split = stringified.split("\r\n");
-
     const requestObj = {};
 
-    for (const parameter of split){
+    if(incommingBuff !== undefined){
 
-        // split http handshake request to key/value
-        if(parameter !== "GET / HTTP/1.1" && parameter !== ""){
+        const stringified = incommingBuff.toString();
+        const split = stringified.split("\r\n");
 
-            const temp = parameter.split(": ");
+        for (const parameter of split){
 
-            // replace all - with _ , so i don't have to have strings as keys.
-            requestObj[temp[0].replaceAll("-", "_")] = temp[1];
+            // split http handshake request to key/value
+            if(parameter !== "GET / HTTP/1.1" && parameter !== ""){
 
-        }else if(parameter !== ""){
+                const temp = parameter.split(": ");
 
-            const temp = parameter.split(" ");
-            requestObj["method"] = temp[0];
-            requestObj["path"] = temp[1];
-            requestObj["protocol"] = temp[2];
+                // replace all - with _ , so i don't have to have strings as keys.
+                requestObj[temp[0].replaceAll("-", "_")] = temp[1];
+
+            }else if(parameter !== ""){
+
+                const temp = parameter.split(" ");
+                requestObj["method"] = temp[0];
+                requestObj["path"] = temp[1];
+                requestObj["protocol"] = temp[2];
+
+            };
 
         };
+
+    }else{
+
+        requestObj = null;
 
     };
 
@@ -131,67 +65,168 @@ function splitLines(incommingBuff){
 
 };
 
+function bits(num){
+    const binary = num.toString(2);
+    const bits = binary.padStart(8, 0);
+    return bits;
+}
 
 const server = net.createServer(async(socket) => {
 
-    console.log("is readable? :", isReadable(socket), "\n")
+    console.log("is readable? :", isReadable(socket), "\n");
 
-    // https://nodejs.org/api/stream.html#readableforeachfn-options
+    let websock = false;
 
-    // https://nodejs.org/api/stream.html#readable-streams
+        // when the websocket-connection is established
+    /**  0                   1                   2                   3
+         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+        +-+-+-+-+-------+-+-------------+-------------------------------+
+        |F|R|R|R| opcode|M| Payload len |    Extended payload length    |
+        |I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |
+        |N|V|V|V|       |S|             |   (if payload len==126/127)   |
+        | |1|2|3|       |K|             |                               |
+        +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
+        |     Extended payload length continued, if payload len == 127  |
+        + - - - - - - - - - - - - - - - +-------------------------------+
+        |                               |Masking-key, if MASK set to 1  |
+        +-------------------------------+-------------------------------+
+        | Masking-key (continued)       |          Payload Data         |
+        +-------------------------------- - - - - - - - - - - - - - - - +
+        :                     Payload Data continued ...                :
+        + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
+        |                     Payload Data continued ...                |
+        +---------------------------------------------------------------+ 
+    */
 
-    if(isReadable(socket)){
+    socket.on("data", (data) => {
 
-        // buffer er i hex
-        const incommingBuff = await getChunk(socket);
+        if(websock === true){
 
-        const requestObj = splitLines(incommingBuff);
+            // handeling the websocket frames
 
-        console.log("Request:");
-        console.log(requestObj);
+            console.log("websocket, reading frame...");
 
-        // create response-key
-        const acceptKey = crypto
-            .createHash("sha1")
-            .update(requestObj.sec_websocket_key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
-            .digest("base64");
+            // where i contain the headers, after dividing them
+            const incommingFrame = {};
 
-        // opening handshake
-        // https://datatracker.ietf.org/doc/html/rfc6455#section-1.3
+            // getting the individual bytes from the data
+            const byte1 = data[0];
+            const byte2 = data[1];
+            const byte3 = data[2];
+            const byte4 = data[3];
+            const byte5 = data[4];
+            const byte6 = data[5];
+            const byte7 = data[6];
+            const byte8 = data[7];
+            const byte9 = data[8];
+            const byte10 = data[9];
 
-        // reading client handshake
-        // https://datatracker.ietf.org/doc/html/rfc6455#section-4.2.1
+            // logging for testpurposes, to see data
+            const incommingdata = [...data];
+            console.log(incommingdata)
 
-        // websocket frames
-        // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
+            // logging for testpurposes, to see bits
+            console.log("byte 1:", bits(byte1));
+            console.log("byte 2:", bits(byte2));
+            console.log("byte 3:", bits(byte3));
+            console.log("byte 4:", bits(byte4));
+            console.log("byte 5:", bits(byte5));
+            console.log("byte 6:", bits(byte6));
+            console.log("byte 7:", bits(byte7));
+            console.log("byte 8:", bits(byte8));
+            console.log("byte 9:", bits(byte9));
+            console.log("byte 10:", bits(byte10));
 
-        // create response
-        const response = [
-            "HTTP/1.1 101 Switching Protocols",
-            // `origin: ${requestObj.origin}`,
-            `upgrade: websocket`,
-            `connection: upgrade`,
-            `sec-websocket-accept: ${acceptKey}`,
-            `sec-websocket-version: ${requestObj.sec_websocket_version}`,
-            `sec-websocket-extensions: ${requestObj.sec_websocket_extensions.split("; ")[0]}`,
-            // `subprotocol: null`,
-            // `extensions: []`,
-             "\r\n"
-            ].join("\r\n");
+            // length of header, before payload
+            let headerLen = 16;
 
-        console.log(`\nResponse:\n${response}`);
+            // headers
+            incommingFrame.FIN = (byte1 & 0b10000000) >> 7;
+            incommingFrame.RSV1 = (byte1 & 0b01000000) >> 6;
+            incommingFrame.RSV2 = (byte1 & 0b00100000) >> 5;
+            incommingFrame.RSV3 = (byte1 & 0b00010000) >> 4;
+            incommingFrame.opcode = (byte1 & 0b00001111);
+            incommingFrame.mask = (byte2 & 0b10000000) >> 7;
+            incommingFrame.payloadLen = (byte2 & 0b01111111);
+            if(incommingFrame.payloadLen < 126 && incommingFrame.mask === 1){
+                // 64-bit masking-key
+                // incommingFrame.maskingKey = ()
 
-        socket.write(Buffer.from(response));
+                headerLen = 80;
 
-        // incommingBuff.next()
+            }else if(incommingFrame.payloadLen === 126){
+                // 16-bit extended payload-len
+                const ext_16_bit_Payload_Len = bits(incommingFrame.payloadLen) + bits(byte3) + bits(byte4);
+                incommingFrame.payloadLen = parseInt(ext_16_bit_Payload_Len);
+
+                headerLen = 32
+
+                if(incommingFrame.mask === 1){
+                    // hvis 126, 64-bit masking-key forskjøvet med 16-bit
+
+                    headerLen = 96;
+                };
+            }else if(incommingFrame.payloadLen === 127){
+                // 64-bit extended payload-len
+                const ext_64_bit_Payload_Len = bits(incommingFrame.payloadLen) + bits(byte3) + bits(byte4) + bits(byte5) + bits(byte6) + bits(byte7) + bits(byte8) + bits(byte9) + bits(byte10);
+                incommingFrame.payloadLen = parseInt(ext_64_bit_Payload_Len);
+                headerLen = 80;
+
+                if(incommingFrame.mask === 1){
+                    //hvis 127, 64-bit masking-key forskjøvet med 64-bit
+
+                    headerLen = 144;
+                };
+            };
+
+            console.log("\nFrame Contents:")
+            console.log("FIN:", incommingFrame.FIN);
+            console.log("RSV1:", incommingFrame.RSV1);
+            console.log("RSV2:", incommingFrame.RSV2);
+            console.log("RSV3:", incommingFrame.RSV3);
+            console.log("opcode:", incommingFrame.opcode);
+            console.log("mask:", incommingFrame.mask);
+            console.log("Payload len:", incommingFrame.payloadLen);
+
+        }else{
+
+            // handle http handshake
+
+            const requestObj = splitLines(data);
+
+            console.log("http request:");
+            console.log(requestObj)
+
+            // create response-key
+            const acceptKey = crypto
+                .createHash("sha1")
+                .update(requestObj.sec_websocket_key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
+                .digest("base64");
+
+            // create response
+            const response = [
+                "HTTP/1.1 101 Switching Protocols",
+                // `origin: ${requestObj.origin}`,
+                `upgrade: websocket`,
+                `connection: upgrade`,
+                `sec-websocket-accept: ${acceptKey}`,
+                `sec-websocket-version: ${requestObj.sec_websocket_version}`,
+                // `sec-websocket-extensions: ${requestObj.sec_websocket_extensions.split("; ")[0]}`,
+                // `subprotocol: null`,
+                // `extensions: []`,
+                "\r\n"
+                ].join("\r\n");
 
 
-    }else{
+            console.log(`http response: \n${response}`);
 
-        throw new Error("Socket not readable.");
+            socket.write(Buffer.from(response));
+            websock = true;
+            console.log("websock:", websock)
+        };
 
-    };
-
+    });
+    
     socket.once("end", (closingHandshake) => {
 
         console.log(`-----\n\nrecieved closing handshake from:\n\n\tremoteAddress\t${socket.remoteAddress}\n\non:\n\n\tlocalPort\t${socket.localPort}\n\tlocalAddress\t${socket.localAddress}\n\n-----`);

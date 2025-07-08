@@ -118,7 +118,20 @@ try{
 
         socket.send("start");
 
+        let count = 0;
+
+        // const intervalSend = setInterval((count) => {
+        //     socket.send(`mesage nr: ${count++}`);
+        //     if(count = 5){
+        //         clearInterval(intervalSend);
+        //         socket.close(1000, "ending connection, status code 1000 normal closure");
+        //     };
+        // }, 2000);
+
+
     });
+
+
 
 }catch(error){
 
