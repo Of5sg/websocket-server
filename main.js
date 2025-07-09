@@ -132,10 +132,10 @@ const server = net.createServer(async(socket) => {
             incommingFrame.mask = (byte2 & 0b10000000) >> 7;
             incommingFrame.payloadLen = (byte2 & 0b01111111);
             if(incommingFrame.payloadLen < 126 && incommingFrame.mask === 1){
-                // 64-bit masking-key
+                // 32-bit masking-key
                 // incommingFrame.maskingKey = ()
 
-                headerLen = 80;
+                headerLen = 48;
 
             }else if(incommingFrame.payloadLen === 126){
                 // 16-bit extended payload-len
@@ -145,9 +145,9 @@ const server = net.createServer(async(socket) => {
                 headerLen = 32
 
                 if(incommingFrame.mask === 1){
-                    // hvis 126, 64-bit masking-key forskjøvet med 16-bit
+                    // hvis 126, 32-bit masking-key forskjøvet med 16-bit
 
-                    headerLen = 96;
+                    headerLen = 64;
                 };
             }else if(incommingFrame.payloadLen === 127){
                 // 64-bit extended payload-len
@@ -156,9 +156,9 @@ const server = net.createServer(async(socket) => {
                 headerLen = 80;
 
                 if(incommingFrame.mask === 1){
-                    //hvis 127, 64-bit masking-key forskjøvet med 64-bit
+                    //hvis 127, 32-bit masking-key forskjøvet med 64-bit
 
-                    headerLen = 144;
+                    headerLen = 112;
                 };
             };
 
@@ -202,7 +202,7 @@ const server = net.createServer(async(socket) => {
                 ].join("\r\n");
 
 
-            console.log(`http response: \n${response}`);
+            console.log(`\nhttp response: \n${response}`);
 
             socket.write(Buffer.from(response));
             websock = true;
