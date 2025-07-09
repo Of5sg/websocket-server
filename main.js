@@ -104,23 +104,9 @@ const server = net.createServer(async(socket) => {
             // where i contain the headers, after dividing them
             const incommingFrame = {};
 
-            const test1 = 
-                (BigInt(data[2]) << 56n)|
-                (BigInt(data[3]) << 48n)|
-                (BigInt(data[4]) << 40n)|
-                (BigInt(data[5]) << 32n)|
-                (BigInt(data[6]) << 24n)|
-                (BigInt(data[7]) << 16n)|
-                (BigInt(data[8]) << 8n)|
-                (BigInt(data[9]));
-
-
             // logging for testpurposes, to see data
             const incommingdata = [...data];
             console.log(incommingdata)
-
-            // logging to see if i have successfullt created a 64-bit int, and as far as i can tell, i have
-            // console.log(`\n test----\n${bits(test1, 64)}\n\n`);
 
             // logging for testpurposes, to see bits
             console.log("byte 1:", bits(data[0], 8));
