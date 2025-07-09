@@ -120,7 +120,7 @@ const server = net.createServer(async(socket) => {
             console.log(incommingdata)
 
             // logging to see if i have successfullt created a 64-bit int, and as far as i can tell, i have
-            console.log(`\n test----\n${bits(test1, 64)}\n\n`);
+            // console.log(`\n test----\n${bits(test1, 64)}\n\n`);
 
             // logging for testpurposes, to see bits
             console.log("byte 1:", bits(data[0], 8));
@@ -193,14 +193,13 @@ const server = net.createServer(async(socket) => {
                 };
             };
 
-            const payloadStartPoint = headerLen/8;
-
             // here i unmask the payload
+            // client to server masking: https://datatracker.ietf.org/doc/html/rfc6455#section-5.3
+            
+            const payloadStartPoint = headerLen/8;
 
             const unmaskedArray = [];
 
-            // client to server masking: https://datatracker.ietf.org/doc/html/rfc6455#section-5.3
-            
             for (let i = payloadStartPoint; i < (incommingFrame.payloadLen + payloadStartPoint); i++){
                 
                 // // ------ logging for test-purposes
@@ -221,6 +220,7 @@ const server = net.createServer(async(socket) => {
             // create buffer from unmasked-array
             const payloadBuffer = Buffer.from(unmaskedArray);
 
+            // logging the headers and the contents of the frame
             console.log("\nFrame Contents:")
             console.log("FIN:", incommingFrame.FIN);
             console.log("RSV1:", incommingFrame.RSV1);
