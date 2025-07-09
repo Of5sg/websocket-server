@@ -109,20 +109,20 @@ const server = net.createServer(async(socket) => {
             console.log(incommingdata)
 
             // logging for testpurposes, to see bits
-            // console.log("byte 1:", bits(data[0], 8));
-            // console.log("byte 2:", bits(data[1], 8));
-            // console.log("byte 3:", bits(data[2], 8));
-            // console.log("byte 4:", bits(data[3], 8));
-            // console.log("byte 5:", bits(data[4], 8));
-            // console.log("byte 6:", bits(data[5], 8));
-            // console.log("byte 7:", bits(data[6], 8));
-            // console.log("byte 8:", bits(data[7], 8));
-            // console.log("byte 9:", bits(data[8], 8));
-            // console.log("byte 10:", bits(data[9], 8));
-            // console.log("byte 11:", bits(data[10], 8));
-            // console.log("byte 12:", bits(data[11], 8));
-            // console.log("byte 13:", bits(data[12], 8));
-            // console.log("byte 14:", bits(data[13], 8));
+            console.log("byte 1:", bits(data[0], 8));
+            console.log("byte 2:", bits(data[1], 8));
+            console.log("byte 3:", bits(data[2], 8));
+            console.log("byte 4:", bits(data[3], 8));
+            console.log("byte 5:", bits(data[4], 8));
+            console.log("byte 6:", bits(data[5], 8));
+            console.log("byte 7:", bits(data[6], 8));
+            console.log("byte 8:", bits(data[7], 8));
+            console.log("byte 9:", bits(data[8], 8));
+            console.log("byte 10:", bits(data[9], 8));
+            console.log("byte 11:", bits(data[10], 8));
+            console.log("byte 12:", bits(data[11], 8));
+            console.log("byte 13:", bits(data[12], 8));
+            console.log("byte 14:", bits(data[13], 8));
 
             // length of header, before payload
             let headerLen = 16;
@@ -205,6 +205,7 @@ const server = net.createServer(async(socket) => {
 
             // create buffer from unmasked-array
             const payloadBuffer = Buffer.from(unmaskedArray);
+            incommingFrame.payload = payloadBuffer.toString("utf8");
 
             // logging the headers and the contents of the frame
             console.log("\nFrame Contents:")
@@ -216,7 +217,7 @@ const server = net.createServer(async(socket) => {
             console.log("mask:", incommingFrame.mask);
             console.log("Payload len:", incommingFrame.payloadLen);
             console.log("masking-key:", incommingFrame.maskingKey);
-            console.log("Payload:", payloadBuffer.toString("utf8"));
+            console.log("Payload:", incommingFrame.payload);
 
             // i still have to write the logic for handling wheter the frame is a FIN frame
 
