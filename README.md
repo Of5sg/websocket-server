@@ -2,7 +2,7 @@
 
 this is a websocket server in node.js, that i wrote in order to learn more about internet protocols
 
-currently it is run by writing(in split console):
+currently it is run by writing(in split terminal):
 ```
 node main.js
 
