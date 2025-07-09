@@ -222,7 +222,9 @@ const server = net.createServer(async(socket) => {
                 };
             };
 
+            const payloadStartPoint = headerLen/8;
 
+            // i need to unmask the payload using the masking-key---!
 
             console.log("\nFrame Contents:")
             console.log("FIN:", incommingFrame.FIN);
@@ -232,6 +234,10 @@ const server = net.createServer(async(socket) => {
             console.log("opcode:", incommingFrame.opcode);
             console.log("mask:", incommingFrame.mask);
             console.log("Payload len:", incommingFrame.payloadLen);
+            console.log("masking-key:", incommingFrame.maskingKey);
+            console.log("Payload:", incommingFrame.payload);
+
+            // i still have to write the logic for handling wheter the frame is a FIN frame
 
         }else{
 
