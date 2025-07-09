@@ -104,32 +104,15 @@ const server = net.createServer(async(socket) => {
             // where i contain the headers, after dividing them
             const incommingFrame = {};
 
-            // getting the individual bytes from the data
-            const byte1 = data[0];
-            const byte2 = data[1];
-            const byte3 = data[2];
-            const byte4 = data[3];
-            const byte5 = data[4];
-            const byte6 = data[5];
-            const byte7 = data[6];
-            const byte8 = data[7];
-            const byte9 = data[8];
-            const byte10 = data[9];
-            const byte11 = data[10];
-            const byte12 = data[11];
-            const byte13 = data[12];
-            const byte14 = data[13];
-
-
             const test1 = 
-                (BigInt(byte3) << 56n)|
-                (BigInt(byte4) << 48n)|
-                (BigInt(byte5) << 40n)|
-                (BigInt(byte6) << 32n)|
-                (BigInt(byte7) << 24n)|
-                (BigInt(byte8) << 16n)|
-                (BigInt(byte9) << 8n)|
-                (BigInt(byte10));
+                (BigInt(data[2]) << 56n)|
+                (BigInt(data[3]) << 48n)|
+                (BigInt(data[4]) << 40n)|
+                (BigInt(data[5]) << 32n)|
+                (BigInt(data[6]) << 24n)|
+                (BigInt(data[7]) << 16n)|
+                (BigInt(data[8]) << 8n)|
+                (BigInt(data[9]));
 
 
             // logging for testpurposes, to see data
@@ -140,83 +123,71 @@ const server = net.createServer(async(socket) => {
             console.log(`\n test----\n${bits(test1, 64)}\n\n`);
 
             // logging for testpurposes, to see bits
-            console.log("byte 1:", bits(byte1, 8));
-            console.log("byte 2:", bits(byte2, 8));
-            console.log("byte 3:", bits(byte3, 8));
-            console.log("byte 4:", bits(byte4, 8));
-            console.log("byte 5:", bits(byte5, 8));
-            console.log("byte 6:", bits(byte6, 8));
-            console.log("byte 7:", bits(byte7, 8));
-            console.log("byte 8:", bits(byte8, 8));
-            console.log("byte 9:", bits(byte9, 8));
-            console.log("byte 10:", bits(byte10, 8));
-            console.log("byte 11:", bits(byte11, 8));
-            console.log("byte 12:", bits(byte12, 8));
-            console.log("byte 13:", bits(byte13, 8));
-            console.log("byte 14:", bits(byte14, 8));
+            console.log("byte 1:", bits(data[0], 8));
+            console.log("byte 2:", bits(data[1], 8));
+            console.log("byte 3:", bits(data[2], 8));
+            console.log("byte 4:", bits(data[3], 8));
+            console.log("byte 5:", bits(data[4], 8));
+            console.log("byte 6:", bits(data[5], 8));
+            console.log("byte 7:", bits(data[6], 8));
+            console.log("byte 8:", bits(data[7], 8));
+            console.log("byte 9:", bits(data[8], 8));
+            console.log("byte 10:", bits(data[9], 8));
+            console.log("byte 11:", bits(data[10], 8));
+            console.log("byte 12:", bits(data[11], 8));
+            console.log("byte 13:", bits(data[12], 8));
+            console.log("byte 14:", bits(data[13], 8));
 
             // length of header, before payload
             let headerLen = 16;
 
             // headers
-            incommingFrame.FIN = (byte1 & 0b10000000) >> 7;
-            incommingFrame.RSV1 = (byte1 & 0b01000000) >> 6;
-            incommingFrame.RSV2 = (byte1 & 0b00100000) >> 5;
-            incommingFrame.RSV3 = (byte1 & 0b00010000) >> 4;
-            incommingFrame.opcode = (byte1 & 0b00001111);
-            incommingFrame.mask = (byte2 & 0b10000000) >> 7;
-            incommingFrame.payloadLen = (byte2 & 0b01111111);
+            incommingFrame.FIN = (data[0] & 0b10000000) >> 7;
+            incommingFrame.RSV1 = (data[0] & 0b01000000) >> 6;
+            incommingFrame.RSV2 = (data[0] & 0b00100000) >> 5;
+            incommingFrame.RSV3 = (data[0] & 0b00010000) >> 4;
+            incommingFrame.opcode = (data[0] & 0b00001111);
+            incommingFrame.mask = (data[1] & 0b10000000) >> 7;
+            incommingFrame.payloadLen = (data[1] & 0b01111111);
             if(incommingFrame.payloadLen < 126 && incommingFrame.mask === 1){
                 // 32-bit masking-key
-                incommingFrame.maskingKey = 
-                    (byte3 << 24)|
-                    (byte4 << 16)|
-                    (byte5 << 8)|
-                    (byte6);
+                incommingFrame.maskingKey = [data[2], data[3], data[4], data[5]]
                 
                 headerLen = 48;
 
             }else if(incommingFrame.payloadLen === 126){
                 // 16-bit extended payload-len
                 incommingFrame.payloadLen = 
-                    (byte3 << 8)|
-                    (byte4);
+                    (data[2] << 8)|
+                    (data[3]);
 
                 headerLen = 32
 
                 if(incommingFrame.mask === 1){
                     // hvis 126, 32-bit masking-key forskjøvet med 16-bit
                     // byte 5, 6, 7, 8 = masking-key, 16-bit-displacement
-                    incommingFrame.maskingKey = 
-                        (byte5 << 24)|
-                        (byte6 << 16)|
-                        (byte7 << 8)|
-                        (byte8);
+                    incommingFrame.maskingKey = [data[4], data[5], data[6], data[7]]
 
                     headerLen = 64;
                 };
             }else if(incommingFrame.payloadLen === 127){
                 // 64-bit extended payload-len
                 incommingFrame.payloadLen = 
-                    (BigInt(byte3) << 56n)|
-                    (BigInt(byte4) << 48n)|
-                    (BigInt(byte5) << 40n)|
-                    (BigInt(byte6) << 32n)|
-                    (BigInt(byte7) << 24n)|
-                    (BigInt(byte8) << 16n)|
-                    (BigInt(byte9) << 8n)|
-                    (BigInt(byte10));
+                    (BigInt(data[2]) << 56n)|
+                    (BigInt(data[3]) << 48n)|
+                    (BigInt(data[4]) << 40n)|
+                    (BigInt(data[5]) << 32n)|
+                    (BigInt(data[6]) << 24n)|
+                    (BigInt(data[7]) << 16n)|
+                    (BigInt(data[8]) << 8n)|
+                    (BigInt(data[9]));
 
                 headerLen = 80;
 
                 if(incommingFrame.mask === 1){
                     //hvis 127, 32-bit masking-key forskjøvet med 64-bit
                     // bytes 11, 12, 13, 14 = masking-key, 64-bit-displacement
-                    incommingFrame.maskingKey = 
-                        (byte11 << 24)|
-                        (byte12 << 16)|
-                        (byte13 << 8)|
-                        (byte14);
+                    incommingFrame.maskingKey = [data[10], data[11], data[12], data[13]];
                     
                     headerLen = 112;
                 };
@@ -225,6 +196,22 @@ const server = net.createServer(async(socket) => {
             const payloadStartPoint = headerLen/8;
 
             // i need to unmask the payload using the masking-key---!
+
+            const unmaskedArray = [];
+
+            for (let i = payloadStartPoint; i < (incommingFrame.payloadLen + payloadStartPoint); i++){
+                console.log("\nincomming bytes")
+                console.log(data[i]);
+                console.log(incommingFrame.maskingKey[((i - 6) % incommingFrame.maskingKey.length)]);
+                
+                const unmaskedByte =(data[i] ^ incommingFrame.maskingKey[((i - 6) % incommingFrame.maskingKey.length)]);
+
+                console.log("unmasked byte:", unmaskedByte)
+
+                unmaskedArray.push(unmaskedByte);
+            };
+
+            const payloadBuffer = Buffer.from(unmaskedArray);
 
             console.log("\nFrame Contents:")
             console.log("FIN:", incommingFrame.FIN);
@@ -235,7 +222,7 @@ const server = net.createServer(async(socket) => {
             console.log("mask:", incommingFrame.mask);
             console.log("Payload len:", incommingFrame.payloadLen);
             console.log("masking-key:", incommingFrame.maskingKey);
-            console.log("Payload:", incommingFrame.payload);
+            console.log("Payload:", payloadBuffer.toString("utf8"));
 
             // i still have to write the logic for handling wheter the frame is a FIN frame
 

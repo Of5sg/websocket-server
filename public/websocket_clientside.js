@@ -26,7 +26,7 @@ try{
 
         console.log("websocket connection opened");
 
-        socket.send("start");
+        socket.send("start, nå funker det, her er første melding :)");
 
         // let count = 0;
 
