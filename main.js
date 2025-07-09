@@ -194,7 +194,7 @@ const server = net.createServer(async(socket) => {
                 // console.log(incommingFrame.maskingKey[((i - 6) % incommingFrame.maskingKey.length)]);
                 
                 // unmask bytes by xor-ing the the payload bytes against the masking-key bytes
-                const unmaskedByte =(data[i] ^ incommingFrame.maskingKey[((i - 6) % incommingFrame.maskingKey.length)]);
+                const unmaskedByte =(data[i] ^ incommingFrame.maskingKey[((i - payloadStartPoint) % incommingFrame.maskingKey.length)]);
 
                 // // ------ logging for test-purposes
                 // console.log("unmasked byte:", unmaskedByte)
