@@ -58,9 +58,10 @@ function bits(num, len){
     }else{
 
         return null;
+
     };
 
-}
+};
 
 const server = net.createServer(async(socket) => {
 
