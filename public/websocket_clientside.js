@@ -26,17 +26,19 @@ try{
 
         console.log("websocket connection opened");
 
-        socket.send("start, nå funker det, her er første melding :)");
+        socket.send("Nå funker det, her er første melding :)");
 
         // let count = 0;
 
-        // const intervalSend = setInterval((count) => {
-        //     socket.send(`mesage nr: ${count++}`);
-        //     if(count = 5){
+        // const intervalSend = setInterval(() => {
+        //     socket.send(`message nr: ${count}, randomnumbers - ${Math.random()*2000}`);
+        //     if(count === 5){
         //         clearInterval(intervalSend);
         //         socket.close(1000, "ending connection, status code 1000 normal closure");
+                
         //     };
-        // }, 2000);
+        //     count++;
+        // }, 1000);
 
 
     });

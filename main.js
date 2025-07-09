@@ -96,7 +96,7 @@ const server = net.createServer(async(socket) => {
 
             // handeling the websocket frames
 
-            console.log("websocket, reading frame...");
+            console.log("\nwebsocket, reading frame...");
 
             // bitmasker og bit-manipulasjon https://www.learncpp.com/cpp-tutorial/bit-manipulation-with-bitwise-operators-and-bit-masks/
             // bitwise-operasjoner https://dev.to/stephengade/mastering-bitwise-operations-a-simplified-guide-2031
@@ -109,20 +109,20 @@ const server = net.createServer(async(socket) => {
             console.log(incommingdata)
 
             // logging for testpurposes, to see bits
-            console.log("byte 1:", bits(data[0], 8));
-            console.log("byte 2:", bits(data[1], 8));
-            console.log("byte 3:", bits(data[2], 8));
-            console.log("byte 4:", bits(data[3], 8));
-            console.log("byte 5:", bits(data[4], 8));
-            console.log("byte 6:", bits(data[5], 8));
-            console.log("byte 7:", bits(data[6], 8));
-            console.log("byte 8:", bits(data[7], 8));
-            console.log("byte 9:", bits(data[8], 8));
-            console.log("byte 10:", bits(data[9], 8));
-            console.log("byte 11:", bits(data[10], 8));
-            console.log("byte 12:", bits(data[11], 8));
-            console.log("byte 13:", bits(data[12], 8));
-            console.log("byte 14:", bits(data[13], 8));
+            // console.log("byte 1:", bits(data[0], 8));
+            // console.log("byte 2:", bits(data[1], 8));
+            // console.log("byte 3:", bits(data[2], 8));
+            // console.log("byte 4:", bits(data[3], 8));
+            // console.log("byte 5:", bits(data[4], 8));
+            // console.log("byte 6:", bits(data[5], 8));
+            // console.log("byte 7:", bits(data[6], 8));
+            // console.log("byte 8:", bits(data[7], 8));
+            // console.log("byte 9:", bits(data[8], 8));
+            // console.log("byte 10:", bits(data[9], 8));
+            // console.log("byte 11:", bits(data[10], 8));
+            // console.log("byte 12:", bits(data[11], 8));
+            // console.log("byte 13:", bits(data[12], 8));
+            // console.log("byte 14:", bits(data[13], 8));
 
             // length of header, before payload
             let headerLen = 16;
