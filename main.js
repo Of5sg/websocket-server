@@ -126,6 +126,7 @@ const server = net.createServer(async(socket) => {
             incommingFrame.opcode = (data[0] & 0b00001111);
             incommingFrame.mask = (data[1] & 0b10000000) >> 7;
             incommingFrame.payloadLen = (data[1] & 0b01111111);
+            incommingFrame.maskingKey = [];
             if(incommingFrame.payloadLen < 126 && incommingFrame.mask === 1){
                 // 32-bit masking-key
                 incommingFrame.maskingKey = [data[2], data[3], data[4], data[5]]
@@ -188,6 +189,8 @@ const server = net.createServer(async(socket) => {
 
             // create buffer from unmasked-array
             const payloadBuffer = Buffer.from(unmaskedArray);
+
+            // add payload to incommingFrame-Object
             incommingFrame.payload = payloadBuffer.toString("utf8");
 
             // logging the headers and the contents of the frame
