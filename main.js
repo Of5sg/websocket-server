@@ -119,7 +119,7 @@ const server = net.createServer(async(socket) => {
             const incommingdata = [...data];
             console.log(incommingdata)
 
-            //logging to see if i have successfullt created a 64-bit int, and as far as i can tell, i have
+            // logging to see if i have successfullt created a 64-bit int, and as far as i can tell, i have
             console.log(`\n test----\n${bits(test1, 64)}\n\n`);
 
             // logging for testpurposes, to see bits
@@ -164,7 +164,7 @@ const server = net.createServer(async(socket) => {
                 headerLen = 32
 
                 if(incommingFrame.mask === 1){
-                    // hvis 126, 32-bit masking-key forskjøvet med 16-bit
+                    // if 126, 32-bit masking-key displaced by 16-bit
                     // byte 5, 6, 7, 8 = masking-key, 16-bit-displacement
                     incommingFrame.maskingKey = [data[4], data[5], data[6], data[7]]
 
@@ -185,7 +185,7 @@ const server = net.createServer(async(socket) => {
                 headerLen = 80;
 
                 if(incommingFrame.mask === 1){
-                    //hvis 127, 32-bit masking-key forskjøvet med 64-bit
+                    // if 127, 32-bit masking-key displaced by 64-bit
                     // bytes 11, 12, 13, 14 = masking-key, 64-bit-displacement
                     incommingFrame.maskingKey = [data[10], data[11], data[12], data[13]];
                     
@@ -195,22 +195,30 @@ const server = net.createServer(async(socket) => {
 
             const payloadStartPoint = headerLen/8;
 
-            // i need to unmask the payload using the masking-key---!
+            // here i unmask the payload
 
             const unmaskedArray = [];
 
+            // client to server masking: https://datatracker.ietf.org/doc/html/rfc6455#section-5.3
+            
             for (let i = payloadStartPoint; i < (incommingFrame.payloadLen + payloadStartPoint); i++){
-                console.log("\nincomming bytes")
-                console.log(data[i]);
-                console.log(incommingFrame.maskingKey[((i - 6) % incommingFrame.maskingKey.length)]);
                 
+                // // ------ logging for test-purposes
+                // console.log("\nincomming bytes")
+                // console.log(data[i]);
+                // console.log(incommingFrame.maskingKey[((i - 6) % incommingFrame.maskingKey.length)]);
+                
+                // unmask bytes by xor-ing the the payload bytes against the masking-key bytes
                 const unmaskedByte =(data[i] ^ incommingFrame.maskingKey[((i - 6) % incommingFrame.maskingKey.length)]);
 
-                console.log("unmasked byte:", unmaskedByte)
+                // // ------ logging for test-purposes
+                // console.log("unmasked byte:", unmaskedByte)
 
+                // push to unmasked-array
                 unmaskedArray.push(unmaskedByte);
             };
 
+            // create buffer from unmasked-array
             const payloadBuffer = Buffer.from(unmaskedArray);
 
             console.log("\nFrame Contents:")
