@@ -4,6 +4,9 @@
 
 try{
 
+    let responsvariabel = "";
+    let counter = 0;
+
     const socket = new WebSocket(`ws://localhost:8000`);
     
     socket.addEventListener("close", (mess) => {
@@ -16,9 +19,23 @@ try{
 
     });
 
-    socket.addEventListener("message", (message) => {
+    socket.addEventListener("message", async (mess) => {
 
-        console.log(message);
+        console.log(mess.data);
+
+        // console.log("length:", mess.data.length);
+
+        // setTimeout(() => {
+        //     socket.send(mess.data);
+        // }, 2000);
+
+        // client-echo
+        // if(responsvariabel !== mess.data && counter < 8){
+        //     responsvariabel = responsvariabel + mess.data;
+        //     const textEncode = new TextEncoder()
+        //     socket.send(textEncode.encode(responsvariabel));
+        //     counter++;
+        // };
 
     });
 
@@ -34,13 +51,13 @@ try{
         //     socket.send(`message nr: ${count}, randomnumbers - ${Math.random()*2000}`);
         //     if(count === 5){
         //         clearInterval(intervalSend);
-        //         socket.close(1000, "ending connection, status code 1000 normal closure");
-                
+        //         setTimeout(() => {
+        //             // timeout so the last message from the echo-server can arrive
+        //             socket.close(1000, "ending connection, status code 1000 normal closure");
+        //         }, 500);
         //     };
         //     count++;
         // }, 1000);
-
-
     });
 
 
