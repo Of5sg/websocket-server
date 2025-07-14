@@ -1,3 +1,5 @@
+import { Buffer } from "buffer";
+
 // handling the websocket frames
 
 export function DeconstFrame(data){
@@ -20,7 +22,7 @@ export function DeconstFrame(data){
     if(incommingFrame.payloadLen < 126 && incommingFrame.mask === 1){
 
         // 32-bit masking-key
-        incommingFrame.maskingKey = [data[2], data[3], data[4], data[5]]
+        incommingFrame.maskingKey = [data[2], data[3], data[4], data[5]];
 
         headerLen = 48;
 
@@ -31,13 +33,13 @@ export function DeconstFrame(data){
             (data[2] << 8)|
             (data[3]);
 
-        headerLen = 32
+        headerLen = 32;
 
         if(incommingFrame.mask === 1){
 
             // if 126, 32-bit masking-key displaced by 16-bit
             // byte 5, 6, 7, 8 = masking-key, 16-bit-displacement
-            incommingFrame.maskingKey = [data[4], data[5], data[6], data[7]]
+            incommingFrame.maskingKey = [data[4], data[5], data[6], data[7]];
 
             headerLen = 64;
 

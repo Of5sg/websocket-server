@@ -20,17 +20,19 @@ const server = net.createServer(async(socket) => {
 
             const incommingFrame = DeconstFrame(data);
 
-            console.log(incommingFrame);
+            console.log("\nRequest Frame:\n", incommingFrame);
 
             // i still have to write the logic for handling wheter the frame is a FIN frame
 
             // attempt at a response : ------------------------------------------------
 
-            const payload = `Her er respons...(Echo-server)---nå gjør vi denne mye lenger, og enda litt---\r\n maskingkey: ${incommingFrame.maskingKey}\r\n payload: ${incommingFrame.payload}`;
+            const payload = `\nHer er respons...(Echo-server)---nå gjør vi denne mye lenger, og enda litt---\r\n maskingkey fra request: ${incommingFrame.maskingKey}\r\n payload fra request: ${incommingFrame.payload}`;
             
             const responseFrame = ConstrFrame(payload);
 
-            console.log(responseFrame);
+            // for logging, and test-purposes - can be removed
+            const testDeconResponse = DeconstFrame(responseFrame);
+            console.log("\nResponse Frame:\n", testDeconResponse);
 
             socket.write(responseFrame);
 

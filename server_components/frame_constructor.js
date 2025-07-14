@@ -1,8 +1,10 @@
+import { Buffer } from "buffer";
+
 export function ConstrFrame(payload){
 
     const responsedata = []
 
-    // for å teste uten extended payload
+    // for å teste
     let responsePayload = Buffer.from(payload, "utf8");
 
     // building initial response
@@ -49,4 +51,5 @@ export function ConstrFrame(payload){
     const attemptResponse = Buffer.concat([responseHeaders, responsePayload]);
 
     return attemptResponse;
+    
 };
