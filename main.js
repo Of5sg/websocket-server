@@ -114,7 +114,7 @@ const server = net.createServer(async(socket) => {
             
             };
 
-            // i still have to write the logic for handling wheter the frame is a FIN frame
+            // i still have to write the logic for handling whether or not the frame is a FIN frame
 
             // attempt at a response : ------------------------------------------------
 

@@ -79,14 +79,6 @@ export function DeconstFrame(data){
     const payloadStartPoint = incommingFrame.headerLen;
     const unmaskedArray = [];
 
-    // for testing purposes
-    // console.log("incomming frame payload length", incommingFrame.payloadLen);
-
-    // problem with interpreting 64-bit payload-len payloads is beneath here somwhere, needs thinking about--------------------------------- might be because of FIN frames??
-    // the problem might have something to do with the way i am handeling the length?
-    // i believe i have found the problem, it occurs when the clent breaks a single frame up into several chunks
-    // i need to parse together the entire frame before decoding...., need to figure out how to do that.
-
     if(typeof incommingFrame.payloadLen !== "bigint"){
 
         for (let i = payloadStartPoint; i < (incommingFrame.payloadLen + payloadStartPoint); i++){
