@@ -1,4 +1,5 @@
-
+import { readFileSync } from "fs";
+import fs from "fs/promises"
 // https://websockets.spec.whatwg.org/#the-websocket-interface
 
 
@@ -39,14 +40,29 @@ try{
 
     });
 
-    socket.addEventListener("open", () => {
+    socket.addEventListener("open", async () => {
 
         console.log("websocket connection opened");
 
-        socket.send("Nå funker det, her er første melding :)");
+        socket.send("Naa funker det, her er foorste melding :)");
+
+        // // -------------------------------------------------------------
+        // for 64-bit-ext-payload-len
+        // use of aa instead of å, for å unngå mismatch mellom string length og byte length
+        let test_64_len = "Her er starten paa meldingen. ";
+
+        await fs.readFile("public/testInputs.json", {encoding: "utf-8"}).then((data) => {
+            test_64_len += data;
+            test_64_len += " Her er slutten paa meldingen."
+        });
+
+        setTimeout(() => {
+            socket.send(test_64_len);
+        }, 2000);
+        // // -------------------------------------------------------------
+
 
         // let count = 0;
-
         // const intervalSend = setInterval(() => {
         //     socket.send(`message nr: ${count}, randomnumbers - ${Math.random()*2000}`);
         //     if(count === 5){
@@ -58,6 +74,7 @@ try{
         //     };
         //     count++;
         // }, 1000);
+
     });
 
 
