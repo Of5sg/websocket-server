@@ -7,7 +7,7 @@ import { FrameProcessing } from "./server_components/utils.js";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
-const server = net.createServer(async(socket) => {
+const server = net.createServer((socket) => {
 
     let websock = false;
 
@@ -54,7 +54,7 @@ const server = net.createServer(async(socket) => {
             console.log("frame-buffer-length:", frameBufferLength, "expected-total-length", totalLength);
 
 
-            // Handling the Frames, after Construction : ---------------------------------------------------
+            // Handling the Frames, after TCP-Construction : ---------------------------------------------------
 
             // if the total length of the recieved TCP-packets = the expected length of the websocket-frame
             if(frameBufferLength === totalLength){
