@@ -129,19 +129,17 @@ const server = net.createServer(async(socket) => {
                         // error unknown opcode
                         console.error("unknown opcode. \n\topcode:", incommingFrame.opcode);
                         break;
-                
+
                 };
 
                 // reset TCP-Packet-Buffers for next frame
                 tempFrameBuffer = Buffer.alloc(0);
                 totalLength = 0n;
-
-                
                 
             }else if(frameBufferLength > totalLength){
 
                 console.error("the total length of the websocket-frame's TCP-packets concated together, is bigger than the expected frame length??? \nsomething has gone very wrong....")
-                
+
                 // reset TCP-Packet-Buffers for next frame
                 tempFrameBuffer = Buffer.alloc(0);
                 totalLength = 0n;
@@ -152,15 +150,15 @@ const server = net.createServer(async(socket) => {
 
             // attempt at a response : ------------------------------------------------
 
-            const payload = `\nHer er respons...(Echo-server)---nå gjør vi denne mye lenger, og enda litt---\r\n maskingkey fra request: ${incommingFrame.maskingKey}\r\n payload fra request: ${incommingFrame.payload}`;
+            // const payload = `\nHer er respons...(Echo-server)---nå gjør vi denne mye lenger, og enda litt---\r\n maskingkey fra request: ${incommingFrame.maskingKey}\r\n payload fra request: ${incommingFrame.payload}`;
             
-            const responseFrame = ConstrFrame(payload);
+            // const responseFrame = ConstrFrame(payload);
 
-            //for logging, and test-purposes - can be removed
-            const testDeconResponse = DeconstFrame(responseFrame);
-            console.log("\nResponse Frame:\n", testDeconResponse);
+            // //for logging, and test-purposes - can be removed
+            // const testDeconResponse = DeconstFrame(responseFrame);
+            // console.log("\nResponse Frame:\n", testDeconResponse);
 
-            socket.write(responseFrame);
+            // socket.write(responseFrame);
 
         }else{
 

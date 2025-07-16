@@ -1,4 +1,3 @@
-import { readFileSync } from "fs";
 import fs from "fs/promises"
 // https://websockets.spec.whatwg.org/#the-websocket-interface
 
@@ -44,16 +43,16 @@ try{
 
         console.log("websocket connection opened");
 
-        socket.send("Naa funker det, her er foorste melding :)");
+        socket.send("Nå funker det, her er første melding. <----- her :)");
 
         // // -------------------------------------------------------------
         // for 64-bit-ext-payload-len
-        // use of aa instead of å, for å unngå mismatch mellom string length og byte length
-        let test_64_len = "Her er starten paa meldingen. ";
+        // use of aa instead of å, for å unngå mismatch mellom string length og byte length, dette prolemet er fikset
+        let test_64_len = "Her er starten på meldingen. ";
 
         await fs.readFile("public/testInputs.json", {encoding: "utf-8"}).then((data) => {
             test_64_len += data;
-            test_64_len += " Her er slutten paa meldingen."
+            test_64_len += " Her er slutten på meldingen."
         });
 
         setTimeout(() => {
@@ -85,5 +84,3 @@ try{
     
 };
 
-
- 
