@@ -13,9 +13,13 @@ const server = net.createServer(async(socket) => {
 
     // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
-    let tempFrameBuffer = [];
+    // these are for handeling TCP-Packets, and the possible fragmentation of the individual frames.
+    let tempFrameBuffer = Buffer.alloc(0);
     let totalLength = 0n;
 
+    // these are for handeling the Frames, and the possible fragmentation of messages between them.
+    let initialFrameBuffer = {};
+    let tempFINPayloadBuffer = Buffer.alloc(0);
 
     socket.on("data", (data) => {
 
@@ -38,80 +42,130 @@ const server = net.createServer(async(socket) => {
             // check if entire frame has come throug, or if patitioned to several TCP-packets.
             if(frameBufferLength < totalLength){
 
-                tempFrameBuffer = tempFrameBuffer.concat([...data]);
+                tempFrameBuffer = Buffer.concat([tempFrameBuffer, data]);
+
+                frameBufferLength = BigInt(tempFrameBuffer.length);
 
             };
 
-            frameBufferLength = BigInt(tempFrameBuffer.length);
+            // logging for test-purposes
+            console.log("frame-buffer-length:", frameBufferLength, "expected-total-length", totalLength);
 
-            console.log("frame-buffer-length:", frameBufferLength, "total-length", totalLength);
-
+            // if the total length of the recieved TCP-packets = the expected length of the websocket-frame
             if(frameBufferLength === totalLength){
 
                 incommingFrame = DeconstFrame(tempFrameBuffer);
 
-                // handle opcodes
-                const testcomp = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+                switch(incommingFrame.opcode){
+                    case 0x0:
+                        // continuation-frame
+                        tempFINPayloadBuffer = Buffer.concat([tempFINPayloadBuffer, incommingFrame.payload]);
+                        if(incommingFrame.FIN === 1){
+                            incommingFrame.payload = tempFINPayloadBuffer;
+                        };
+                        break;
+                    case 0x1:
+                        // text-frame
+                        if(incommingFrame.FIN === 1){
+                            incommingFrame.payload = incommingFrame.payload.toString("utf8");
 
-                console.log("Frame type:")
+                            console.log(incommingFrame.payload);
+                        }else if(incommingFrame.FIN === 0){
+                            initialFrameBuffer = incommingFrame;
+                            tempFINPayloadBuffer = Buffer.concat([tempFINPayloadBuffer, incommingFrame.payload]);
+                        };
 
-                if (incommingFrame.opcode === 0x0){
-
-                    //continuation-frame
-                    console.log("\tcontinuation-frame");
-
-                }else if(incommingFrame.opcode === 0x1){
-
-                    //text-frame
-                    console.log("\ttext-frame");
-
-                    // // for testing purposes
-                    // console.log(incommingFrame.payload.subarray(-5000).toString());
-
-                    incommingFrame.payload = incommingFrame.payload.toString("utf8");
-
-                    console.log(incommingFrame.payload);
-
-                    // to check if bytelength and string length match, which they should since i am not using any special characters in the test data
-                    console.log("\nlength of payload in frame:", incommingFrame.payloadLen, "lenght of string:", incommingFrame.payload.length, "\n");
+                        break;
+                        
+                    case 0x2:
+                        // binary-frame
+                        break;
+                    case 0x8: 
+                        // close-frame
+                        break;
+                    case 0x9: 
+                        // ping-frame
+                        break;
+                    case 0xA:
+                        // pong-frame
+                        break;
+                    default:
+                        // error unknown opcode
+                        break;
                 
-                }else if(incommingFrame.opcode === 0x2){
-
-                    //binary-frame
-                    console.log("\tbinary-frame");
-
-                }else if(incommingFrame.opcode === 0x8){
-
-                    //close-frame
-                    console.log("\tclose-frame");
-
-                }else if(incommingFrame.opcode === 0x9){
-
-                    //ping-frame
-                    console.log("\tping-frame");
-
-                }else if(incommingFrame.opcode === 0xA){
-
-                    //pong-frame
-                    console.log("\tpong-frame");
-
                 };
 
-                // handle FIN-frames
+                // handle FIN-frames ----- -----
                 if(incommingFrame.FIN === 1){
-                    // end of message
+
+                    // concat final payload into buffer
+                    tempFINPayloadBuffer = Buffer.concat([tempFINPayloadBuffer, incommingFrame.payload]);
+
+                    // collect complete message payload
+                    incommingFrame.payload = tempFINPayloadBuffer;
+
+                    // Clear Buffer
+                    tempFINPayloadBuffer = Buffer.alloc(0);
+
+                    console.log("Frame type:")
+
+                    // handle opcodes ----- -----
+                    if (incommingFrame.opcode === 0x0){
+
+                        //continuation-frame
+                        console.log("\tcontinuation-frame");
+
+                    }else if(incommingFrame.opcode === 0x1){
+
+                        //text-frame
+                        console.log("\ttext-frame");
+
+                        incommingFrame.payload = incommingFrame.payload.toString("utf8");
+
+                        console.log(incommingFrame.payload);
+
+                    }else if(incommingFrame.opcode === 0x2){
+
+                        //binary-frame
+                        console.log("\tbinary-frame");
+
+                    }else if(incommingFrame.opcode === 0x8){
+
+                        //close-frame
+                        console.log("\tclose-frame");
+
+                    }else if(incommingFrame.opcode === 0x9){
+
+                        //ping-frame
+                        console.log("\tping-frame");
+
+                    }else if(incommingFrame.opcode === 0xA){
+
+                        //pong-frame
+                        console.log("\tpong-frame");
+
+                    };
+
                 }else if (incommingFrame.FIN === 0){
-                    // more messages to come
+
+                    // more messages to come, continuation
+
+                    // put unmasked payload in buffer
+                    tempFINPayloadBuffer = Buffer.concat([tempFINPayloadBuffer, incommingFrame.payload]);
+
                 };
 
                 // reset variables for next frame
-                tempFrameBuffer = [];
+                tempFrameBuffer = Buffer.alloc(0);
                 totalLength = 0n;
                 
             }else if(frameBufferLength > totalLength){
 
                 console.error("the total length of the websocket-frame's TCP-packets concated together, is bigger than the expected frame length??? \nsomething has gone very wrong....")
-            
+                
+                tempFrameBuffer = Buffer.alloc(0);
+                totalLength = 0n;
+
             };
 
             // i still have to write the logic for handling whether or not the frame is a FIN frame
@@ -138,8 +192,10 @@ const server = net.createServer(async(socket) => {
             console.log(`\nhttp response: \n${response}`);
 
             socket.write(Buffer.from(response));
+
             websock = true;
-            console.log("websock:", websock)
+
+            console.log("websocket:", websock);
 
         };
 
