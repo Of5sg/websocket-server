@@ -34,6 +34,9 @@ export function splitLines(incommingBuff){
 
                 const temp = parameter.split(": ");
 
+                // make all Keys lowercase
+                temp[0] = temp[0].toLowerCase();
+
                 // replace all - with _ , so i don't have to have strings as keys.
                 requestObj[temp[0].replaceAll("-", "_")] = temp[1];
 
@@ -56,4 +59,23 @@ export function splitLines(incommingBuff){
 
     return requestObj;
 
+};
+
+export function FrameProcessing(completedFrame){
+    switch (completedFrame.opcode){
+        case 0x1:
+            // text-frame
+            completedFrame.payload = completedFrame.payload.toString("utf8");
+
+            console.log("\n\tPayload:\n");
+            console.log(completedFrame.payload, "\n\n");
+            break;
+        case 0x2:
+            // binary-frame
+            console.log("\n\tPayload:\n");
+            console.log(completedFrame.payload, "\n\n");
+            break;
+        default:
+            console.error("opcode not 0x1 or 0x2, opcode:", completedFrame.opcode);
+    };
 };
