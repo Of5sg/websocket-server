@@ -63,7 +63,7 @@ const server = net.createServer((socket) => {
 
             // http-handshake
             const response = Opening_Handshake(data);
-            socket.write(Buffer.from(response));
+            socket.write(response);
             websock = true;
 
         };
