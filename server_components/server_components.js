@@ -3,6 +3,23 @@ import { ConstrFrame } from "./frame_constructor.js";
 
 // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
+/**
+```
+------------------------------------------
+
+function FrameProcessing( completedFrame )
+
+    completedFrame: (Object)
+        - This is the Websocket-Frame after we have reassembled the message from the different frames, or when we are sure it is a complete message.
+
+-------------------------------------------
+
+Description:
+this function handles the logic of opcode 0x1 and 0x2, when we know the message is complete
+
+
+*/
+
 export function FrameProcessing(completedFrame){
     switch (completedFrame.opcode){
         case 0x1:
@@ -24,9 +41,41 @@ export function FrameProcessing(completedFrame){
     };
 };
 
-//variables for buffering websocket-frames, for multi-frame messages, used in OpcodeSwitch
+
+//variables for buffering websocket-frames, for multi-frame messages, used in OpcodeSwitch()
 let initialFrameBuffer = {};
 let tempFINPayloadBuffer = Buffer.alloc(0);
+/**
+```
+-----------------------------------------------
+
+function OpcodeSwitch( incommingFrame, socket )
+
+    incommingFrame: (Object)
+        - the Frame-Object returned by DeconstFrame()
+    
+    socket: (Object)
+        - the Socket-Object returned by net.createServer()
+
+    -----------------------------------------
+    "The function has two external" variables:
+    -----------------------------------------
+
+        initialFrameBuffer: (Object)
+
+            - this allows the function to persist the initial frame of a multiframe message.
+        
+        tempFINPayloadBuffer: (binary-Buffer)
+
+            - this holds the message parts from all the subsequent frames, before they are appended all together to the payload of the initial Frame.
+    
+    -----------------------------------------
+
+Description:
+this function handles the "routing" based on opcodes, and executes the appropriate responses.
+
+
+*/
 
 export function OpcodeSwitch(incommingFrame, socket){
 
@@ -97,7 +146,7 @@ export function OpcodeSwitch(incommingFrame, socket){
             // close-frame
 
             // construct closing message
-            const closingMessage = ConstrFrame(1, 8, incommingFrame.payload);
+            const closingMessage = ConstrFrame(1, 0x8, incommingFrame.payload);
             // write closing message
             socket.write(closingMessage);
             // destroy socket
@@ -110,7 +159,7 @@ export function OpcodeSwitch(incommingFrame, socket){
             // ping-frame
 
             // construct pong-frame
-            const pingResponse = ConstrFrame(1, 10, incommingFrame.payload);
+            const pingResponse = ConstrFrame(1, 0xA, incommingFrame.payload);
             // write response
             socket.write(pingResponse);
             
@@ -128,6 +177,33 @@ export function OpcodeSwitch(incommingFrame, socket){
 
     };
 };
+
+
+/**
+```
+-------------------------------------
+
+function TCPBuffToFrame( streamBuffer )
+
+    streamBuffer: (buffer)
+        - the Buffer that holds the incomming datapackets from the TCP-Stream
+
+Returns:
+    (length of Frame, as BigInt) | null
+
+-------------------------------------
+
+Description:
+This function assumes we have recieved the datapackets in the right order.
+
+It establishes the length of the Websocket-Frame, then checks if the total Byte-length of the frame is more than the Byte-length of the buffer.
+
+    -if true, the server should wait for the next datapacket to arrive on the TCP-stream\(the next socket.on("data") event) and run the function again.
+    
+    -if false, the server can continue, and read the entire frame.
+ 
+ 
+*/
 
 export function TCPBuffToFrame(streamBuffer){
 

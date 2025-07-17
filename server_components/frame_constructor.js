@@ -2,20 +2,37 @@ import { Buffer } from "buffer";
 
 /**
 ```
-ConstrFrame( FIN, opcode, payload )
-    FIN: 
-        1  final message, no continuation frames after, 
-        0  not final message, continuation frames following
-    opcode:
-        0   for continuation-frame,
-        1   for text-frame,
-        2   for binary-frame,
-        8   for close-frame,
-        9   for ping-frame,
-        10  for pong-frame
-    payload:
-        string or binary
+
+function ConstrFrame( FIN, opcode, payload )
+
+    FIN: (int) 
+        1 - final message, no continuation frames after, 
+        0 - not final message, continuation frames following
+
+    opcode: (int)
+        ( decimal| hex | binary )  -  choose one:
+
+        (      0 | 0x0 | 0b0000 )  -  for continuation-frame,
+        (      1 | 0x1 | 0b0001 )  -  for text-frame,
+        (      2 | 0x2 | 0b0010 )  -  for binary-frame,
+        (      8 | 0x8 | 0b1000 )  -  for close-frame,
+        (      9 | 0x9 | 0b1001 )  -  for ping-frame,
+        (     10 | 0xA | 0b1010 )  -  for pong-frame
+
+    payload: (string | binary).
+
+
+Returns: (Buffer)
+    - the response frame, as a Buffer
+
+-----------------------------------
+(for clarity: | means or, choose one)
+----------------------------------- 
+
+Description:
+this function constructs the response-Frame.
 */
+
 export function ConstrFrame(FIN, opcode, payload){
 
     const responsedata = []
