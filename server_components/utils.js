@@ -61,21 +61,3 @@ export function splitLines(incommingBuff){
 
 };
 
-export function FrameProcessing(completedFrame){
-    switch (completedFrame.opcode){
-        case 0x1:
-            // text-frame
-            completedFrame.payload = completedFrame.payload.toString("utf8");
-
-            console.log("\n\tPayload:\n");
-            console.log(completedFrame.payload, "\n\n");
-            break;
-        case 0x2:
-            // binary-frame
-            console.log("\n\tPayload:\n");
-            console.log(completedFrame.payload, "\n\n");
-            break;
-        default:
-            console.error("opcode not 0x1 or 0x2, opcode:", completedFrame.opcode);
-    };
-};

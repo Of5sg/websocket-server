@@ -3,10 +3,12 @@ import crypto from "crypto";
 
 export function Http_Handshake(data){
 
+    // https://datatracker.ietf.org/doc/html/rfc6455#section-4.2.1
+
     const requestObj = splitLines(data);
 
-    console.log("http request:");
-    console.log(requestObj)
+    // console.log("http request:");
+    // console.log(requestObj)
 
     // create response-key
     const acceptKey = crypto
