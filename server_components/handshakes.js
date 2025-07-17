@@ -1,7 +1,7 @@
 import { splitLines } from "./utils.js";
 import crypto from "crypto";
 
-export function Http_Handshake(data){
+export function Opening_Handshake(data){
 
     // https://datatracker.ietf.org/doc/html/rfc6455#section-4.2.1
 
@@ -33,3 +33,7 @@ export function Http_Handshake(data){
     return response;
     
 };
+
+export function Closing_Handshake(){
+    
+}

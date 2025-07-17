@@ -9,12 +9,14 @@ export function FrameProcessing(completedFrame){
             completedFrame.payload = completedFrame.payload.toString("utf8");
 
             console.log("\n\tPayload:\n");
-            console.log(completedFrame.payload, "\n\n");
+            console.log(completedFrame.payload);
+            console.log("\n-------------------------------------------------------\n");
             break;
         case 0x2:
             // binary-frame
             console.log("\n\tPayload:\n");
-            console.log(completedFrame.payload, "\n\n");
+            console.log(completedFrame.payload);
+            console.log("\n-------------------------------------------------------\n");
             break;
         default:
             console.error("opcode not 0x1 or 0x2, opcode:", completedFrame.opcode);

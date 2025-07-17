@@ -1,19 +1,34 @@
 import { Buffer } from "buffer";
 
-export function ConstrFrame(payload){
+/**
+```
+ConstrFrame( FIN, opcode, payload )
+    FIN: 
+        1  final message, no continuation frames after, 
+        0  not final message, continuation frames following
+    opcode:
+        0   for continuation-frame,
+        1   for text-frame,
+        2   for binary-frame,
+        8   for close-frame,
+        9   for ping-frame,
+        10  for pong-frame
+    payload:
+        string or binary
+*/
+export function ConstrFrame(FIN, opcode, payload){
 
     const responsedata = []
 
-    // for å teste
     let responsePayload = Buffer.from(payload, "utf8");
 
     // building initial response
     responsedata[0] = 
-        (1 << 7)|   //FIN
+        (FIN << 7)|   //FIN
         (0 << 6)|   //RSV1
         (0 << 5)|   //RSV2
         (0 << 4)|   //RSV3
-        (0b0001);   //opcode
+        (opcode);   //opcode
 
     if (responsePayload.byteLength < 126){
 
@@ -48,8 +63,8 @@ export function ConstrFrame(payload){
     };
 
     const responseHeaders = Buffer.from(responsedata);
-    const attemptResponse = Buffer.concat([responseHeaders, responsePayload]);
+    const response = Buffer.concat([responseHeaders, responsePayload]);
 
-    return attemptResponse;
+    return response;
     
 };

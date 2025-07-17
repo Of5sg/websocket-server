@@ -2,8 +2,8 @@ import net from "net";
 import { Buffer } from "buffer";
 import { DeconstFrame } from "./server_components/frame_interpreter.js";
 import { ConstrFrame } from "./server_components/frame_constructor.js";
-import { Http_Handshake } from "./server_components/http_handshake.js";
-import { OpcodeSwitch, FrameProcessing, TCPBuffToFrame } from "./server_components/server_components.js";
+import { Opening_Handshake } from "./server_components/handshakes.js";
+import { OpcodeSwitch, TCPBuffToFrame } from "./server_components/server_components.js";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
@@ -23,7 +23,7 @@ const server = net.createServer((socket) => {
 
     //     // const payload = `\nHer er respons...(Echo-server)---nå gjør vi denne mye lenger, og enda litt---\r\n maskingkey fra request: ${incommingFrame.maskingKey}\r\n payload fra request: ${incommingFrame.payload}`;
         
-    //     // const responseFrame = ConstrFrame(payload);
+    //     // const responseFrame = ConstrFrame(1, 1, payload);
 
     //     // //for logging, and test-purposes - can be removed
     //     // const testDeconResponse = DeconstFrame(responseFrame);
@@ -76,7 +76,7 @@ const server = net.createServer((socket) => {
         }else{
 
             // http-handshake
-            const response = Http_Handshake(data);
+            const response = Opening_Handshake(data);
             socket.write(Buffer.from(response));
             websock = true;
 
