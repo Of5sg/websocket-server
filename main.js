@@ -16,6 +16,9 @@ const server = net.createServer((socket) => {
     // this is the buffer for the incomming TCP-Stream
     let streamBuffer = Buffer.alloc(0);
 
+    // variables for buffering messages fragmented over several Websocket-Frames
+    // is contained inside server_components/server_components.js
+
     //     // attempt at a response : ------------------------------------------------
 
     //     // const payload = `\nHer er respons...(Echo-server)---nå gjør vi denne mye lenger, og enda litt---\r\n maskingkey fra request: ${incommingFrame.maskingKey}\r\n payload fra request: ${incommingFrame.payload}`;
@@ -41,6 +44,7 @@ const server = net.createServer((socket) => {
 
             if(bufferedFrameLength !== null){
                 // Frame complete
+                
                 // convert BigInt to Number
                 let endOfFrame = 0;
 

@@ -21,10 +21,11 @@ export function FrameProcessing(completedFrame){
     };
 };
 
-export function OpcodeSwitch(incommingFrame){
+//variables for buffering websocket-frames, for multi-frame messages, used in OpcodeSwitch
+let initialFrameBuffer = {};
+let tempFINPayloadBuffer = Buffer.alloc(0);
 
-    let initialFrameBuffer = {};
-    let tempFINPayloadBuffer = Buffer.alloc(0);
+export function OpcodeSwitch(incommingFrame){
 
     switch(incommingFrame.opcode){
 
@@ -36,14 +37,16 @@ export function OpcodeSwitch(incommingFrame){
             
             if(incommingFrame.FIN === 1){
 
-                //construct the completed frame from continuation-frames
-
+                // construct the completed frame from continuation-frames
                 incommingFrame = initialFrameBuffer;
                 incommingFrame.FIN = 1;
                 incommingFrame.payload = tempFINPayloadBuffer;
 
-                //process the completed frame
+                // reset buffer variables
+                initialFrameBuffer = {};
+                tempFINPayloadBuffer = Buffer.alloc(0);
 
+                // process the completed frame
                 FrameProcessing(incommingFrame);
 
             };
@@ -148,7 +151,7 @@ export function TCPBuffToFrame(streamBuffer){
             frameLengt += 4n;
         };
     }else{
-        console.error("payload_len out of range. payload_len:", payload_len);
+        console.error("payload_len out of range(max = 127). payload_len:", payload_len);
     };
 
     if(frameLengt <= streamBuffer.byteLength){
@@ -163,3 +166,5 @@ export function TCPBuffToFrame(streamBuffer){
     };
     
 };
+
+ 

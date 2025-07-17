@@ -32,8 +32,7 @@ try{
         // client-echo
         // if(responsvariabel !== mess.data && counter < 8){
         //     responsvariabel = responsvariabel + mess.data;
-        //     const textEncode = new TextEncoder()
-        //     socket.send(textEncode.encode(responsvariabel));
+        //     socket.send(responsvariabel);
         //     counter++;
         // };
 
