@@ -1,4 +1,5 @@
 import { Buffer } from "buffer";
+import { ConstrFrame } from "./frame_constructor.js";
 
 // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
@@ -27,7 +28,7 @@ export function FrameProcessing(completedFrame){
 let initialFrameBuffer = {};
 let tempFINPayloadBuffer = Buffer.alloc(0);
 
-export function OpcodeSwitch(incommingFrame){
+export function OpcodeSwitch(incommingFrame, socket){
 
     switch(incommingFrame.opcode){
 
@@ -94,13 +95,25 @@ export function OpcodeSwitch(incommingFrame){
         case 0x8: 
 
             // close-frame
-            // here i should send the closing handshake
+
+            // construct closing message
+            const closingMessage = ConstrFrame(1, 8, incommingFrame.payload);
+            // write closing message
+            socket.write(closingMessage);
+            // destroy socket
+            socket.destroy()
+
             break;
 
         case 0x9: 
 
             // ping-frame
-            // here i need to send a pong frame
+
+            // construct pong-frame
+            const pingResponse = ConstrFrame(1, 10, incommingFrame.payload);
+            // write response
+            socket.write(pingResponse);
+            
             break;
 
         case 0xA:

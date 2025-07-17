@@ -33,7 +33,3 @@ export function Opening_Handshake(data){
     return response;
     
 };
-
-export function Closing_Handshake(){
-    
-}
