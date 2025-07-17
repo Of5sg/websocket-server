@@ -72,7 +72,7 @@ function OpcodeSwitch( incommingFrame, socket )
     -----------------------------------------
 
 Description:
-this function handles the "routing" based on opcodes, and executes the appropriate responses.
+this function handles the "routing" based on opcodes, and executes the appropriate responses or logic.
 
 
 */
@@ -81,12 +81,12 @@ export function OpcodeSwitch(incommingFrame, socket){
 
     switch(incommingFrame.opcode){
 
-        case 0x0:
+        case 0x0:   // ----- continuation-frame ----- 
 
-            // continuation-frame
-
+            // push payload to payload-buffer
             tempFINPayloadBuffer = Buffer.concat([tempFINPayloadBuffer, incommingFrame.payload]);
             
+            // if final frame in multiframe-message, process the message
             if(incommingFrame.FIN === 1){
 
                 // construct the completed frame from continuation-frames
@@ -105,45 +105,46 @@ export function OpcodeSwitch(incommingFrame, socket){
 
             break;
 
-        case 0x1:
 
-            // text-frame
+        case 0x1:   // ----- text-frame ----- 
 
             if(incommingFrame.FIN === 1){
 
+                // process frame
                 FrameProcessing(incommingFrame);
 
             }else if(incommingFrame.FIN === 0){
 
+                // push initial frame to buffer
                 initialFrameBuffer = incommingFrame;
-
-                tempFINPayloadBuffer = Buffer.concat([tempFINPayloadBuffer, incommingFrame.payload]);
-            
-            };
-
-            break;
-            
-        case 0x2:
-
-            // binary-frame
-
-            if(incommingFrame.FIN === 1){
-
-                FrameProcessing(incommingFrame);
-
-            }else if(incommingFrame.FIN === 0){
-
-                initialFrameBuffer = incommingFrame;
-
+                // push payload to payload-buffer
                 tempFINPayloadBuffer = Buffer.concat([tempFINPayloadBuffer, incommingFrame.payload]);
             
             };
 
             break;
 
-        case 0x8: 
 
-            // close-frame
+        case 0x2:   // ----- binary-frame ----- 
+
+            if(incommingFrame.FIN === 1){
+
+                // process frame
+                FrameProcessing(incommingFrame);
+
+            }else if(incommingFrame.FIN === 0){
+
+                // push initial frame to buffer
+                initialFrameBuffer = incommingFrame;
+                // push payload to payload-buffer
+                tempFINPayloadBuffer = Buffer.concat([tempFINPayloadBuffer, incommingFrame.payload]);
+            
+            };
+
+            break;
+
+
+        case 0x8:   // ----- close-frame ----- 
 
             // construct closing message
             const closingMessage = ConstrFrame(1, 0x8, incommingFrame.payload);
@@ -154,21 +155,21 @@ export function OpcodeSwitch(incommingFrame, socket){
 
             break;
 
-        case 0x9: 
 
-            // ping-frame
+        case 0x9:   // ----- ping-frame ----- 
 
             // construct pong-frame
             const pingResponse = ConstrFrame(1, 0xA, incommingFrame.payload);
             // write response
             socket.write(pingResponse);
-            
+
             break;
 
-        case 0xA:
 
-            // pong-frame
+        case 0xA:   // ----- pong-frame ----- 
+
             // here i recieve a pong frame, for a ping i have sent
+
             break;
 
         default:
@@ -217,30 +218,38 @@ export function TCPBuffToFrame(streamBuffer){
     if (payload_len <= 125){
         // add length of payload
         frameLengt += BigInt(payload_len);
+
         if(mask === 1){
             // add length of masking key
             frameLengt += 4n;
         };
+
     }else if (payload_len === 126){
+        // read length of payload from Buffer
         const ext_payload_len = streamBuffer.readUInt16BE(2);
         // add lenght of header
         frameLengt += 2n;
         // add length of payload
         frameLengt += BigInt(ext_payload_len);
+
         if (mask === 1){
             // add length of masking key
             frameLengt += 4n;
         };
+
     }else if (payload_len === 127){
+        // read length of payload from Buffer
         const ext_payload_len = streamBuffer.readBigUInt64BE(2);
         // add lenght of header
         frameLengt += 8n;
         // add length of payload
         frameLengt += ext_payload_len;
+        
         if (mask === 1){
             // add length of masking key
             frameLengt += 4n;
         };
+
     }else{
         console.error("payload_len out of range(max = 127). payload_len:", payload_len);
     };
