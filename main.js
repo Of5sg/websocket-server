@@ -16,9 +16,6 @@ const server = net.createServer((socket) => {
     // this is the buffer for the incomming TCP-Stream
     let streamBuffer = Buffer.alloc(0);
 
-    // length of incomming frame in buffer
-    let bufferedFrameLength = 0n;
-
     //     // attempt at a response : ------------------------------------------------
 
     //     // const payload = `\nHer er respons...(Echo-server)---nå gjør vi denne mye lenger, og enda litt---\r\n maskingkey fra request: ${incommingFrame.maskingKey}\r\n payload fra request: ${incommingFrame.payload}`;
@@ -36,30 +33,44 @@ const server = net.createServer((socket) => {
 
         if(websock === true){
 
+            // push data to buffer
             streamBuffer = Buffer.concat([streamBuffer, data]);
 
             // calculate length of frame in Buffer, and if frame is complete
-            bufferedFrameLength = TCPBuffToFrame(streamBuffer);
+            const bufferedFrameLength = TCPBuffToFrame(streamBuffer);
 
             if(bufferedFrameLength !== null){
-                // convert BigInt to number;
-                const endOfFrame = Number(bufferedFrameLength);
+                // Frame complete
+                // convert BigInt to Number
+                let endOfFrame = 0;
+
+                if(bufferedFrameLength <= Number.MAX_SAFE_INTEGER){
+                    endOfFrame = Number(bufferedFrameLength);
+                }else{
+                    console.error("Frame-Length exceeds the MAX_SAFE_INTEGER value for Number");
+                };
+
                 // extract Frame from streamBuffer
                 const frameBuffer = [...(streamBuffer.subarray(0, endOfFrame))];
+
                 // remove frame from streamBuffer
                 streamBuffer = streamBuffer.subarray(endOfFrame);
-                // reset frame length variable
-                bufferedFrameLength = 0n;
+
                 // Convert to object
                 const WebsocketFrame = DeconstFrame(frameBuffer);
+
                 // Run opcode switch
                 OpcodeSwitch(WebsocketFrame);
+
             }else{
-                // wait for the entire frame to be Buffered
+
+                // Frame incomplete: wait for the entire frame to be Buffered
                 console.log("waiting for entire Websocket-Frame to enter Buffer.");
+
             };
 
         }else{
+
             // http-handshake
             const response = Http_Handshake(data);
             socket.write(Buffer.from(response));
