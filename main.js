@@ -3,6 +3,8 @@ import { Buffer } from "buffer";
 import { DeconstFrame } from "./server_components/frame_interpreter.js";
 import { Opening_Handshake } from "./server_components/handshakes.js";
 import { OpcodeSwitch, TCPBuffToFrame } from "./server_components/server_components.js";
+import { ConstrFrame } from "./server_components/frame_constructor.js";
+import { RandomString } from "./server_components/utils.js";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
@@ -12,14 +14,36 @@ const server = net.createServer((socket) => {
 
     // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
+    // to persist ping timing
+    let pingTimer1;
+
+    // for ping payload
+    let pingMessage = "";
+
+    // sending a ping to the client.
+    setInterval(() => {
+        if(websock === true){
+            pingMessage = RandomString(15);
+            const pingFrame = ConstrFrame(1, 0x9, pingMessage);
+            pingTimer1 =  performance.now();
+            socket.write(pingFrame);
+        };
+    }, 10000);
+
     // this is the buffer for the incomming TCP-Stream
     let streamBuffer = Buffer.alloc(0);
 
-    // variables for buffering messages fragmented over several Websocket-Frames
-    // is contained inside server_components/server_components.js
+    // variables for buffering messages fragmented over several Websocket-Frames, used in the opcodeSwitch() function.
+    socket.initialFrameBuffer = {};
+    socket.tempFINPayloadBuffer = Buffer.alloc(0);
 
+    // data event
     socket.on("data", (data) => {
 
+        // for ping and pong frames, this is when the pong is recieved.
+        const pingTimer2 = performance.now();
+
+        // if handshake is complete
         if(websock === true){
 
             // push data to buffer
@@ -29,7 +53,7 @@ const server = net.createServer((socket) => {
             const bufferedFrameLength = TCPBuffToFrame(streamBuffer);
 
             if(bufferedFrameLength !== null){
-                // Frame complete
+                // Frame completely assembled
                 
                 // convert BigInt to Number
                 let endOfFrame = 0;
@@ -50,7 +74,7 @@ const server = net.createServer((socket) => {
                 const WebsocketFrame = DeconstFrame(frameBuffer);
 
                 // Run opcode switch
-                OpcodeSwitch(WebsocketFrame, socket);
+                OpcodeSwitch(WebsocketFrame, socket, pingMessage, pingTimer1, pingTimer2);
 
             }else{
 
@@ -60,6 +84,7 @@ const server = net.createServer((socket) => {
             };
 
         }else{
+            // if handshake is not complete
 
             // http-handshake
             const response = Opening_Handshake(data);

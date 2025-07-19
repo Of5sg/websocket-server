@@ -61,3 +61,16 @@ export function splitLines(incommingBuff){
 
 };
 
+export function RandomString(len){
+
+    const symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+
+    let result  = "";
+
+    for(let i = 0; i < len; i++){
+        const symb = symbols[Math.floor(Math.random() * symbols.length)]
+        result += symb;
+    };
+
+    return result;
+};

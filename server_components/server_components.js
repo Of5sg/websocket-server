@@ -42,14 +42,11 @@ export function FrameProcessing(completedFrame){
 };
 
 
-//variables for buffering websocket-frames, for multi-frame messages, used in OpcodeSwitch()
-let initialFrameBuffer = {};
-let tempFINPayloadBuffer = Buffer.alloc(0);
 /**
 ```
 -----------------------------------------------
 
-function OpcodeSwitch( incommingFrame, socket )
+function OpcodeSwitch( incommingFrame, socket, pingTimer1, pingTimer2 )
 
     incommingFrame: (Object)
         - the Frame-Object returned by DeconstFrame()
@@ -57,15 +54,24 @@ function OpcodeSwitch( incommingFrame, socket )
     socket: (Object)
         - the Socket-Object returned by net.createServer()
 
+    pingMessage: (string)
+        - the payload of the sent Ping
+
+    pingTimer1: (Double)
+        - the time when a ping was sent from the server.
+
+    pingTimer2: (Double)
+        - the time when a pong was recieved from the client.
+
     -----------------------------------------
-    "The function has two external" variables:
+    "The function has two external" variables, in the socket Object:
     -----------------------------------------
 
-        initialFrameBuffer: (Object)
+        socket.initialFrameBuffer: (Object)
 
             - this allows the function to persist the initial frame of a multiframe message.
         
-        tempFINPayloadBuffer: (binary-Buffer)
+        socket.tempFINPayloadBuffer: (binary-Buffer)
 
             - this holds the message parts from all the subsequent frames, before they are appended all together to the payload of the initial Frame.
     
@@ -77,26 +83,26 @@ this function handles the "routing" based on opcodes, and executes the appropria
 
 */
 
-export function OpcodeSwitch(incommingFrame, socket){
+export function OpcodeSwitch(incommingFrame, socket, pingMessage, pingTimer1, pingTimer2){
 
     switch(incommingFrame.opcode){
 
         case 0x0:   // ----- continuation-frame ----- 
 
             // push payload to payload-buffer
-            tempFINPayloadBuffer = Buffer.concat([tempFINPayloadBuffer, incommingFrame.payload]);
+            socket.tempFINPayloadBuffer = Buffer.concat([socket.tempFINPayloadBuffer, incommingFrame.payload]);
             
             // if final frame in multiframe-message, process the message
             if(incommingFrame.FIN === 1){
 
                 // construct the completed frame from continuation-frames
-                incommingFrame = initialFrameBuffer;
+                incommingFrame = socket.initialFrameBuffer;
                 incommingFrame.FIN = 1;
-                incommingFrame.payload = tempFINPayloadBuffer;
+                incommingFrame.payload = socket.tempFINPayloadBuffer;
 
                 // reset buffer variables
-                initialFrameBuffer = {};
-                tempFINPayloadBuffer = Buffer.alloc(0);
+                socket.initialFrameBuffer = {};
+                socket.tempFINPayloadBuffer = Buffer.alloc(0);
 
                 // process the completed frame
                 FrameProcessing(incommingFrame);
@@ -116,9 +122,9 @@ export function OpcodeSwitch(incommingFrame, socket){
             }else if(incommingFrame.FIN === 0){
 
                 // push initial frame to buffer
-                initialFrameBuffer = incommingFrame;
+                socket.initialFrameBuffer = incommingFrame;
                 // push payload to payload-buffer
-                tempFINPayloadBuffer = Buffer.concat([tempFINPayloadBuffer, incommingFrame.payload]);
+                socket.tempFINPayloadBuffer = Buffer.concat([socket.tempFINPayloadBuffer, incommingFrame.payload]);
             
             };
 
@@ -135,9 +141,9 @@ export function OpcodeSwitch(incommingFrame, socket){
             }else if(incommingFrame.FIN === 0){
 
                 // push initial frame to buffer
-                initialFrameBuffer = incommingFrame;
+                socket.initialFrameBuffer = incommingFrame;
                 // push payload to payload-buffer
-                tempFINPayloadBuffer = Buffer.concat([tempFINPayloadBuffer, incommingFrame.payload]);
+                socket.tempFINPayloadBuffer = Buffer.concat([socket.tempFINPayloadBuffer, incommingFrame.payload]);
             
             };
 
@@ -146,8 +152,10 @@ export function OpcodeSwitch(incommingFrame, socket){
 
         case 0x8:   // ----- close-frame ----- 
 
+            // set statuscode
+            let statusCode = 1000;
             // construct closing message
-            const closingMessage = ConstrFrame(1, 0x8, incommingFrame.payload);
+            const closingMessage = ConstrFrame(1, 0x8, statusCode);
             // write closing message
             socket.write(closingMessage);
             // destroy socket
@@ -169,6 +177,16 @@ export function OpcodeSwitch(incommingFrame, socket){
         case 0xA:   // ----- pong-frame ----- 
 
             // here i recieve a pong frame, for a ping i have sent
+
+            if(incommingFrame.payload.toString() === pingMessage){
+                console.log("Pong payload returned successfully");
+            }else{
+                console.warn("WARNING: PONG PAYLOAD MISMATCH");
+                console.log("\tPing message:", pingMessage);
+                console.log("\tPong response:", incommingFrame.payload.toString());
+            };
+
+            console.log("Ping:", (pingTimer2 - pingTimer1), "\n");
 
             break;
 
