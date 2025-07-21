@@ -14,7 +14,7 @@ const server = net.createServer((socket) => {
 
     // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
-    // extensions, deflate
+    // websocket-extensions, deflate
     let websock_extensions = false;
     let permessage_deflate = false;
     let client_max_window_bits = false;
@@ -104,7 +104,7 @@ const server = net.createServer((socket) => {
             // setting extension variables, to indicate whether extensions have been negotiated
             permessage_deflate = response.deflate.permessage_deflate;
             client_max_window_bits = response.deflate.client_max_window_bits;
-            
+
             if(permessage_deflate === true){
                 websock_extensions = true;
             };
