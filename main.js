@@ -2,7 +2,7 @@ import net from "net";
 import { Buffer } from "buffer";
 import { DeconstFrame } from "./server_components/frame_interpreter.js";
 import { Opening_Handshake } from "./server_components/handshakes.js";
-import { OpcodeSwitch, TCPBuffToFrame } from "./server_components/server_components.js";
+import { OpcodeSwitch, TCPBuffToFrame, WebsocketInflate } from "./server_components/server_components.js";
 import { ConstrFrame } from "./server_components/frame_constructor.js";
 import { RandomString } from "./server_components/utils.js";
 
@@ -13,6 +13,11 @@ const server = net.createServer((socket) => {
     let websock = false;
 
     // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
+
+    // extensions, deflate
+    let websock_extensions = false;
+    let permessage_deflate = false;
+    let client_max_window_bits = false;
 
     // to persist ping timing
     let pingTimer1;
@@ -71,10 +76,16 @@ const server = net.createServer((socket) => {
                 streamBuffer = streamBuffer.subarray(endOfFrame);
 
                 // Convert to object
-                const WebsocketFrame = DeconstFrame(frameBuffer);
+                const websocketFrame = DeconstFrame(frameBuffer);
 
+                // Inflate Algorithm
+                // WebsocketInflate(websocketFrame);
+                // for extensions and algorithms// LZ77 and Huffman coding
+                // https://datatracker.ietf.org/doc/html/rfc7692#section-7
+                // https://datatracker.ietf.org/doc/html/rfc1951#section-2
+                
                 // Run opcode switch
-                OpcodeSwitch(WebsocketFrame, socket, pingMessage, pingTimer1, pingTimer2);
+                OpcodeSwitch(websocketFrame, socket, pingMessage, pingTimer1, pingTimer2);
 
             }else{
 
@@ -88,8 +99,14 @@ const server = net.createServer((socket) => {
 
             // http-handshake
             const response = Opening_Handshake(data);
-            socket.write(response);
+            socket.write(response.res);
+            permessage_deflate = response.deflate.permessage_deflate;
+            client_max_window_bits = response.deflate.client_max_window_bits;
             websock = true;
+
+            if(permessage_deflate === true){
+                websock_extensions = true;
+            };
 
         };
 

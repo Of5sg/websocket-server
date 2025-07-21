@@ -33,7 +33,15 @@ Description:
 this function constructs the response-Frame.
 */
 
-export function ConstrFrame(FIN, opcode, payload){
+export function ConstrFrame(FIN, opcode, payload, options = {}){
+
+    const {
+        RSV1 = 0,
+        RSV2 = 0,
+        RSV3 = 0
+    } = options
+
+    // i have not yet implemented any logic for serverside masking
 
     const responsedata = []
 
@@ -41,11 +49,11 @@ export function ConstrFrame(FIN, opcode, payload){
 
     // building initial response
     responsedata[0] = 
-        (FIN << 7)|   //FIN
-        (0 << 6)|   //RSV1
-        (0 << 5)|   //RSV2
-        (0 << 4)|   //RSV3
-        (opcode);   //opcode
+        (FIN << 7)|             //FIN
+        (options.RSV1 << 6)|    //RSV1
+        (options.RSV2 << 5)|    //RSV2
+        (options.RSV3 << 4)|    //RSV3
+        (opcode);               //opcode
 
     if (responsePayload.byteLength < 126){
 
