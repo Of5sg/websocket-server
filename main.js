@@ -100,13 +100,17 @@ const server = net.createServer((socket) => {
             // http-handshake
             const response = Opening_Handshake(data);
             socket.write(response.res);
+
+            // setting extension variables, to indicate whether extensions have been negotiated
             permessage_deflate = response.deflate.permessage_deflate;
             client_max_window_bits = response.deflate.client_max_window_bits;
-            websock = true;
-
+            
             if(permessage_deflate === true){
                 websock_extensions = true;
             };
+
+            // setting websock to true, indicating websocket-connection
+            websock = true;
 
         };
 
