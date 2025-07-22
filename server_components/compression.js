@@ -100,25 +100,41 @@ export function WebsocketDeflate(websocketFrame){
     };
 
     // logging for test-purposes
-    console.log(searchWindow);
+    console.log("Initial Search Window:\n", searchWindow);
 
     // hashtable for Tokens
     const hashTable = []; // Hash table [[], [], []];
 
+    const pastSearch = [];
+
     let position = 0;
 
     // loop for LZSS Compression
-    while(position < (data.length - searchWindowLength)){
+    while(position < data.length){
 
         console.log(searchWindow.join(""));
+        
+        if(position < (data.length - searchWindowLength)){
 
-        searchWindow.shift();
+            const windowFirstLetter = searchWindow.shift();
 
-        searchWindow.push(data[(position+searchWindowLength)]);
+            pastSearch.push(windowFirstLetter);
+
+            searchWindow.push(data[(position+searchWindowLength)]);
+
+        }else if (position >= (data.length - searchWindowLength)){
+
+            const windowFirstLetter = searchWindow.shift();
+
+            pastSearch.push(windowFirstLetter);
+
+        };
 
         position++;
 
     };
+
+    console.log("Past Search Array after Loop:\n", pastSearch);
 
 };
 
