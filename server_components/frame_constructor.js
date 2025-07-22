@@ -21,6 +21,11 @@ function ConstrFrame( FIN, opcode, payload )
 
     payload: (string | binary).
 
+    options: (should all be 0, unless extension negotiated with client)
+        RSV1 = (0 | 1),
+        RSV2 = (0 | 1),
+        RSV3 = (0 | 1)
+
 
 Returns: (Buffer)
     - the response frame, as a Buffer
@@ -35,13 +40,15 @@ this function constructs the response-Frame.
 
 export function ConstrFrame(FIN, opcode, payload, options = {}){
 
+    // For RSV1 and extensions: https://datatracker.ietf.org/doc/html/rfc7692
+
     const {
         RSV1 = 0,
         RSV2 = 0,
         RSV3 = 0
     } = options
 
-    // i have not yet implemented any logic for serverside masking
+    // Building response from here
 
     const responsedata = []
 

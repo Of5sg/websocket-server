@@ -2,7 +2,7 @@ import net from "net";
 import { Buffer } from "buffer";
 import { DeconstFrame } from "./server_components/frame_interpreter.js";
 import { Opening_Handshake } from "./server_components/handshakes.js";
-import { OpcodeSwitch, TCPBuffToFrame, WebsocketInflate } from "./server_components/server_components.js";
+import { OpcodeSwitch, TCPBuffToFrame } from "./server_components/server_components.js";
 import { ConstrFrame } from "./server_components/frame_constructor.js";
 import { RandomString } from "./server_components/utils.js";
 
