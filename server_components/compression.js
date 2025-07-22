@@ -3,7 +3,7 @@ import { Bits } from "./utils.js";
 //temporary websocket Frame for testing purposes
 const frame = {
   FIN: 1,
-  RSV1: 0,
+  RSV1: 1,
   RSV2: 0,
   RSV3: 0,
   opcode: 1,
@@ -77,17 +77,48 @@ export function WebsocketDeflate(websocketFrame){
    saves time since there are both fewer insertions and fewer searches.
     */
 
-    const data = websocketFrame.payload;
+    const data = websocketFrame.payload.toString();
 
     // block-buffer size ?? 65KB ?? for RAW ??
     // block-buffer size ?? 32KB ?? for compressed ??
     // dynamic block buffer size ?? grow dynamically or chunked buffers ??
     
+    // LZSS Compression
+
+    const searchWindow = [];
+
+    let searchWindowLength = 15;
+
+    // make sure Search Window is not longer than message
+    if (searchWindowLength >= (data.length - 5) && data.length > 3){
+        searchWindowLength = Math.ceil(data.length/2);
+    };
+
+    for(let i = 0; i < searchWindowLength; i++){
+        // fill searchWindow with initial letters.
+        searchWindow.push(data[i]);
+    };
+
+    // logging for test-purposes
+    console.log(searchWindow);
+
+    // hashtable for Tokens
     const hashTable = []; // Hash table [[], [], []];
 
-    let searchString = "";
-    
-    const searchWindow = [];
+    let position = 0;
+
+    // loop for LZSS Compression
+    while(position < (data.length - searchWindowLength)){
+
+        console.log(searchWindow.join(""));
+
+        searchWindow.shift();
+
+        searchWindow.push(data[(position+searchWindowLength)]);
+
+        position++;
+
+    };
 
 };
 
