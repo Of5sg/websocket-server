@@ -14,6 +14,10 @@ const frame = {
   payload: Buffer.from("Nå funker det, her er første melding. her er første med repetisjon.", "utf8")
 };
 
+function ByteLength(Array){
+    return new TextEncoder().encode(Array.join("")).length;
+}
+
 export function WebsocketDeflate(websocketFrame){
 
     // https://datatracker.ietf.org/doc/html/rfc1951#section-4
@@ -85,56 +89,90 @@ export function WebsocketDeflate(websocketFrame){
     
     // LZSS Compression
 
-    const searchWindow = [];
+    const lookahead = [];
 
-    let searchWindowLength = 15;
+    // Length of the lookahead
+    let lookaheadLength = 18;
 
-    // make sure Search Window is not longer than message
-    if (searchWindowLength >= (data.length - 5) && data.length > 3){
-        searchWindowLength = Math.ceil(data.length/2);
+    // make sure lookahead is not longer than message
+    if (lookaheadLength >= (data.length - 5) && data.length > 3){
+        lookaheadLength = Math.ceil(data.length/2);
     };
 
-    for(let i = 0; i < searchWindowLength; i++){
-        // fill searchWindow with initial letters.
-        searchWindow.push(data[i]);
+    // fill lookahead with initial letters.
+    for(let i = 0; i < lookaheadLength; i++){
+        lookahead.push(data[i]);
     };
 
     // logging for test-purposes
-    console.log("Initial Search Window:\n", searchWindow);
+    // console.log("Initial lookahead:\n", lookahead);
 
     // hashtable for Tokens
-    const hashTable = []; // Hash table [[], [], []];
+    const hashTable = {};
 
-    const pastSearch = [];
+    // array for previous letters in lookahead
+    const pastSearchWindow = [];
 
+    // position of lookahead in message
     let position = 0;
 
     // loop for LZSS Compression
     while(position < data.length){
 
-        console.log(searchWindow.join(""));
-        
-        if(position < (data.length - searchWindowLength)){
+        // console.log(lookahead.join(""));
 
-            const windowFirstLetter = searchWindow.shift();
+        // (index-position, length)
 
-            pastSearch.push(windowFirstLetter);
+        // compare first letter of window, with every entry in the hash table
 
-            searchWindow.push(data[(position+searchWindowLength)]);
+        // add to hash table
+        let foundString = "";
+        let indexValue = (position, (foundString.length - 1));
 
-        }else if (position >= (data.length - searchWindowLength)){
+        const hashKeys = Object.keys(hashTable);
 
-            const windowFirstLetter = searchWindow.shift();
+        // loop for number of hash keys
+        for(let i = 0; i < hashKeys.length; i++){
+            // loop for number of letters in individual hash Key
+            for(let y = 0; y < hashKeys[i].length; y++){
+                // compare letters
+                if(lookahead[y] === hashKeys[i][y]){
 
-            pastSearch.push(windowFirstLetter);
+                    foundString += lookahead[y];
 
+                    console.log(foundString);
+
+                };
+
+                if (foundString !== ""){
+                    hashTable[foundString] = indexValue;
+                };
+            };
+        };
+  
+        // remove first letter from lookahead
+        const windowFirstLetter = lookahead.shift();
+
+        // add removed letter to past search array
+        pastSearchWindow.push(windowFirstLetter);
+
+        // add new letter to lookahead
+        if(position < (data.length - lookaheadLength)){
+            lookahead.push(data[(position+lookaheadLength)]);
+        };
+
+        // move past search Window forward when at 4095 Bytes
+        while(ByteLength(pastSearchWindow) >= 4095){
+            pastSearchWindow.shift();
         };
 
         position++;
 
     };
 
-    console.log("Past Search Array after Loop:\n", pastSearch);
+    console.log(hashTable);
+
+    // console.log("Past Search Array after Loop:\n", pastSearchWindow);
 
 };
 
