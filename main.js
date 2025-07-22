@@ -80,7 +80,7 @@ const server = net.createServer((socket) => {
 
                 // Inflate Algorithm
                 // WebsocketInflate(websocketFrame);
-                // for extensions and algorithms// LZ77 and Huffman coding
+                // for extensions and algorithms// LZ77 and Huffman coding, (LZSS based on LZ77)
                 // https://datatracker.ietf.org/doc/html/rfc7692#section-7
                 // https://datatracker.ietf.org/doc/html/rfc1951#section-2
                 
