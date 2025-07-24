@@ -31,26 +31,26 @@ export function Opening_Handshake(data){
     // handling extensions
     let extensions = "";
 
-    let deflate = {
-        permessage_deflate: false,
-        client_max_window_bits: false
-    };
+    // let deflate = {
+    //     permessage_deflate: false,
+    //     client_max_window_bits: false
+    // };
     
-    const clientExtensions = requestObj.sec_websocket_extensions.split("; ");
+    // const clientExtensions = requestObj.sec_websocket_extensions.split("; ");
 
-    if (clientExtensions.includes("permessage-deflate")){
+    // if (clientExtensions.includes("permessage-deflate")){
 
-        extensions += "permessage-deflate";
+    //     extensions += "permessage-deflate";
 
-        deflate.permessage_deflate = true;
+    //     deflate.permessage_deflate = true;
 
-        if (clientExtensions.includes("client_max_window_bits")){
+    //     if (clientExtensions.includes("client_max_window_bits")){
 
-            extensions += "; client_max_window_bits";
+    //         extensions += "; client_max_window_bits";
 
-            deflate.client_max_window_bits = true;
-        };
-    };
+    //         deflate.client_max_window_bits = true;
+    //     };
+    // };
 
     // create response-key
     const acceptKey = crypto
