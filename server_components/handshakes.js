@@ -64,13 +64,15 @@ export function Opening_Handshake(data){
         `Upgrade: websocket`,
         `Connection: upgrade`,
         `Sec-WebSocket-Accept: ${acceptKey}`,
-        `Sec-WebSocket-Extensions: ${extensions}`,
+        // `Sec-WebSocket-Extensions: ${extensions}`,
         "\r\n"
         ].join("\r\n");
 
     console.log("response:\n", responseHeaders)
     const response = Buffer.from(responseHeaders);
 
-    return {res: response, deflate: deflate};
+    // return {res: response, deflate: deflate};
+
+    return {res: response}
     
 };
