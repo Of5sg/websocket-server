@@ -31,7 +31,7 @@ export function httpResponse200html(socket, page){
     const response = new Buffer.from(responseString);
 
     // sending response
-    socket.write(response);
+    socket.end(response);
 
 };
 
@@ -66,7 +66,7 @@ export function httpError404(socket){
 
     const errorResponse = new Buffer.from(errorResponseString);
 
-    socket.write(errorResponse);
+    socket.end(errorResponse);
 }
 
 
@@ -102,7 +102,7 @@ export function httpError501(socket){
     const errorResponse = new Buffer.from(errorResponseString);
 
     // send upgrade request error response
-    socket.write(errorResponse);
+    socket.end(errorResponse);
 
 };
 
@@ -140,6 +140,6 @@ export function httpError500(socket){
     const errorResponse = new Buffer.from(errorResponseString);
     
     // send error response
-    socket.write(errorResponse);
+    socket.end(errorResponse);
 
 };
