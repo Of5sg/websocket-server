@@ -3,7 +3,7 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Test-side</title>
-        <link rel="stylesheet" href="styles.css">
+        <!-- <link rel="stylesheet" href="styles.css"> -->
         <base id="baseUrl">
         <script>
             const base = document.getElementById("baseUrl");
@@ -16,13 +16,13 @@
         <article id="result"></article>
         <script nonce="{nonce}">
             
-            const worker = new Worker("public/websocket_clientside.js");
+            // const worker = new Worker("public/websocket_clientside.js");
             
-            worker.postMessage(`base_Url#aB29sal2108vnjksdhgmkjfhuiu-:-${document.getElementById("baseUrl").getAttribute("href")}`);
+            // worker.postMessage(`base_Url#aB29sal2108vnjksdhgmkjfhuiu-:-${document.getElementById("baseUrl").getAttribute("href")}`);
             
-            worker.onmessage = function (event) {
-                document.getElementById("result").append(`<p>${event.data}</p>`);
-            };
+            // worker.onmessage = function (event) {
+            //     document.getElementById("result").append(`<p>${event.data}</p>`);
+            // };
             
         </script>
     </body>

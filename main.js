@@ -5,6 +5,8 @@ import { Opening_Handshake } from "./server_components/handshakes.js";
 import { OpcodeSwitch, TCPBuffToFrame } from "./server_components/server_components.js";
 import { ConstrFrame } from "./server_components/frame_constructor.js";
 import { RandomString } from "./server_components/utils.js";
+import { splitLines } from "./server_components/utils.js";
+import { readFileSync } from "fs";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
@@ -28,7 +30,7 @@ const server = net.createServer((socket) => {
             pingTimer1 =  performance.now();
             socket.write(pingFrame);
         };
-    }, 10000);
+    }, 2000);
 
     // this is the buffer for the incomming TCP-Stream
     let streamBuffer = Buffer.alloc(0);
@@ -40,11 +42,14 @@ const server = net.createServer((socket) => {
     // data event
     socket.on("data", (data) => {
 
+
         // for ping and pong frames, this is when the pong is recieved.
         const pingTimer2 = performance.now();
 
         // if handshake is complete
         if(websock === true){
+
+
 
             // push data to buffer
             streamBuffer = Buffer.concat([streamBuffer, data]);
@@ -72,7 +77,7 @@ const server = net.createServer((socket) => {
 
                 // Convert to object
                 const websocketFrame = DeconstFrame(frameBuffer);
-                
+
                 // Run opcode switch
                 OpcodeSwitch(websocketFrame, socket, pingMessage, pingTimer1, pingTimer2);
 
@@ -83,18 +88,109 @@ const server = net.createServer((socket) => {
 
             };
 
+
+
         }else{
-            // if handshake is not complete
 
-            // http-handshake
-            const response = Opening_Handshake(data);
-            socket.write(response.res);
 
-            // setting websock to true, indicating websocket-connection
-            websock = true;
+            // if handshake is not complete, and connection not websocket
 
+            const requestObj = splitLines(data);
+
+            console.log(data.toString());
+
+            if(requestObj.method === "GET"){
+
+
+                switch(requestObj.path){
+
+                    case "/":
+
+                        if(requestObj.connection === "upgrade"){
+                            // if request is for upgrade
+
+                            if(requestObj.upgrade === "websocket"){
+                                // if upgrade request is for websocket
+
+                                // http-handshake
+                                const response = Opening_Handshake(requestObj);
+                                socket.write(response.res);
+
+                                // setting websock to true, indicating websocket-connection
+                                websock = true;
+                            };
+
+                        }else{
+
+                            // logic for sendig home page
+                            try{
+
+                                // loading the html
+                                const homePage = readFileSync("./test.htmsl", {encoding: "utf8"});
+
+                                // creating response headers
+                                const responseHeaders = [
+                                    "HTTP/1.1 200",
+                                    "Content-Type: text/html",
+                                    `Content-Length: ${homePage.length}`,
+                                    "\r\n"
+                                    ].join("\r\n");
+
+                                // creating full response
+                                const responseString = responseHeaders + homePage;
+
+                                const response = new Buffer.from(responseString);
+
+                                // sending response
+                                socket.write(response);
+
+                            }catch(error){
+
+                                console.error("Problem sending Homepage");
+                                console.error(error);
+
+                                // for sending an error response to the client
+
+                                const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h3>Error 500, Internal server error</h3></body></html>"
+
+                                const resHeaders = [
+                                    "HTTP/1.1 500",
+                                    "Content-Type: text/html",
+                                    `Content-Length: ${errorRes.length}`,
+                                    "\r\n"
+                                    ].join("\r\n");
+
+                                // create error response
+                                const errorResponseString = resHeaders + errorRes;
+
+                                const errorResponse = new Buffer.from(errorResponseString);
+                                
+                                // send error response
+                                socket.write(errorResponse);
+
+                            };
+
+                        };
+
+                        break;
+
+
+
+                    case "/about":
+
+                        // logic for sending about page
+
+                        break;
+
+
+
+                    default:
+
+                        console.error("Unknown path");
+
+                };
+            };
         };
-
     });
 
     socket.once("end", () => {
