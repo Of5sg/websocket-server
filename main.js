@@ -7,7 +7,6 @@ import { ConstrFrame } from "./server_components/frame_constructor.js";
 import { RandomString } from "./server_components/utils.js";
 import { splitLines } from "./server_components/utils.js";
 import { readFileSync } from "fs";
-import { request } from "http";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
@@ -126,7 +125,7 @@ const server = net.createServer((socket) => {
                                 console.error("Unrecognized upgrade request");
                                 console.error(requestObj.upgrade);
                                 
-                                // set headers for upgrade request error response
+                                // set headers for upgrade request error response, 501 not implemented
                                 const resHeaders = [
                                     "HTTP/1.1 501",
                                     "\r\n"
@@ -143,13 +142,13 @@ const server = net.createServer((socket) => {
                         }else{
 
                             // logic for sendig home page
-                            
+
                             try{
 
                                 // loading the html
                                 const homePage = readFileSync("./test.html", {encoding: "utf8"});
 
-                                // creating response headers
+                                // creating response headers, 200 OK
                                 const responseHeaders = [
                                     "HTTP/1.1 200",
                                     "Content-Type: text/html",
@@ -174,6 +173,7 @@ const server = net.createServer((socket) => {
 
                                 const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h3>Error 500, Internal server error</h3></body></html>"
 
+                                // setting error headers, 500 internal server error
                                 const resHeaders = [
                                     "HTTP/1.1 500",
                                     "Content-Type: text/html",
