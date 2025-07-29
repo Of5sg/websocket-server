@@ -1,6 +1,20 @@
 
+/**
 
-export function httpResponse200(socket, page){
+function httpResponse200html( socket, page )
+
+    Socket: (Object)
+        - the socket-object returned by net.createServer()
+
+    Page: (String)
+        - the page to be displayed
+
+-------------------------------------------------
+Description:
+
+    Sends response: 200 OK, and the requested page
+ */
+export function httpResponse200html(socket, page){
     // 200 OK
 
     // creating response headers, 200 OK
@@ -21,6 +35,18 @@ export function httpResponse200(socket, page){
 
 };
 
+/**
+
+function httpError501( socket )
+
+    Socket: (Object)
+        - the socket-object returned by net.createServer()
+
+-------------------------------------------------
+Description:
+
+    Writes message: Error 501 not implemented
+ */
 export function httpError501(socket){
     // 501 not implemented
 
@@ -38,9 +64,22 @@ export function httpError501(socket){
 
 };
 
+/**
+
+function httpError500( socket )
+
+    Socket: (Object)
+        - the socket-object returned by net.createServer()
+
+-------------------------------------------------
+Description:
+
+    Writes message: 500 internal server error
+
+ */
 export function httpError500(socket){
     // 500 internal server error
-    
+
     const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h3>Error 500, Internal server error</h3></body></html>"
 
     // setting error headers, 500 internal server error

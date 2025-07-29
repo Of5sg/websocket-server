@@ -139,7 +139,7 @@ const server = net.createServer((socket) => {
                                 const homePage = readFileSync("./test.html", {encoding: "utf8"});
                                 
                                 // sending http response, 200 OK
-                                httpRes.httpResponse200(socket, homePage);
+                                httpRes.httpResponse200html(socket, homePage);
 
                             }catch(error){
 
