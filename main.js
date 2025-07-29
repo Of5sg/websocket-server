@@ -4,8 +4,7 @@ import { DeconstFrame } from "./server_components/frame_interpreter.js";
 import { Opening_Handshake } from "./server_components/handshakes.js";
 import { OpcodeSwitch, TCPBuffToFrame } from "./server_components/server_components.js";
 import { ConstrFrame } from "./server_components/frame_constructor.js";
-import { RandomString } from "./server_components/utils.js";
-import { splitLines } from "./server_components/utils.js";
+import { RandomString, splitLines } from "./server_components/utils.js";
 import { readFileSync } from "fs";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
