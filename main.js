@@ -119,15 +119,31 @@ const server = net.createServer((socket) => {
 
                                 // setting websock to true, indicating websocket-connection
                                 websock = true;
+
                             }else{
 
+                                // if upgrade request is for anything other than WebSocket
                                 console.error("Unrecognized upgrade request");
                                 console.error(requestObj.upgrade);
+                                
+                                // set headers for upgrade request error response
+                                const resHeaders = [
+                                    "HTTP/1.1 501",
+                                    "\r\n"
+                                    ].join("\r\n");
+
+                                // create upgrade request error response
+                                const errorResponse = new Buffer.from(resHeaders);
+
+                                // send upgrade request error response
+                                socket.write(errorResponse);
+
                             };
 
                         }else{
 
                             // logic for sendig home page
+                            
                             try{
 
                                 // loading the html
