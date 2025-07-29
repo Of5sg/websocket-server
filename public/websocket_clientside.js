@@ -1,6 +1,4 @@
 import fs from "fs/promises"
-// https://websockets.spec.whatwg.org/#the-websocket-interface
-
 
 try{
 
@@ -25,16 +23,10 @@ try{
 
         // console.log("length:", mess.data.length);
 
+        // client-Echo
         // setTimeout(() => {
         //     socket.send(mess.data);
         // }, 2000);
-
-        // client-echo
-        // if(responsvariabel !== mess.data && counter < 8){
-        //     responsvariabel = responsvariabel + mess.data;
-        //     socket.send(responsvariabel);
-        //     counter++;
-        // };
 
     });
 
@@ -44,9 +36,6 @@ try{
 
         socket.send("Nå funker det, her er første melding. <----- her :)");
 
-        // // -------------------------------------------------------------
-        // for 64-bit-ext-payload-len
-        // use of aa instead of å, for å unngå mismatch mellom string length og byte length, dette prolemet er fikset
         let test_64_len = "Her er starten på meldingen. ";
 
         await fs.readFile("public/testInputs.json", {encoding: "utf-8"}).then((data) => {
@@ -57,25 +46,8 @@ try{
         setTimeout(() => {
             socket.send(test_64_len);
         }, 2000);
-        // // -------------------------------------------------------------
-
-
-        // let count = 0;
-        // const intervalSend = setInterval(() => {
-        //     socket.send(`message nr: ${count}, randomnumbers - ${Math.random()*2000}`);
-        //     if(count === 5){
-        //         clearInterval(intervalSend);
-        //         setTimeout(() => {
-        //             // timeout so the last message from the echo-server can arrive
-        //             socket.close(1000, "ending connection, status code 1000 normal closure");
-        //         }, 500);
-        //     };
-        //     count++;
-        // }, 1000);
 
     });
-
-
 
 }catch(error){
 
