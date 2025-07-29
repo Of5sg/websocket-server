@@ -22,6 +22,8 @@ export function splitLines(incommingBuff){
     // convert to strings
     const requestObj = {};
 
+    console.log(incommingBuff.toString())
+
     if(incommingBuff !== undefined){
 
         const stringified = incommingBuff.toString();
@@ -30,7 +32,7 @@ export function splitLines(incommingBuff){
         for (const parameter of split){
 
             // split http handshake request to key/value
-            if(parameter !== "GET / HTTP/1.1" && parameter !== ""){
+            if(parameter.slice(0, 3) !== "GET" && parameter !== ""){
 
                 const temp = parameter.split(": ");
 

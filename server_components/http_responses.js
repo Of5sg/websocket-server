@@ -37,6 +37,38 @@ export function httpResponse200html(socket, page){
 
 /**
 
+function httpError404( socket )
+
+    Socket: (Object)
+        - the socket-object returned by net.createServer()
+
+-------------------------------------------------
+Description:
+
+    Writes message: Error 404 not found
+ */
+export function httpError404(socket){
+    // 404 not found
+
+    const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h2>Error 404, not found</h2></body></html>"
+
+    const resHeaders = [
+        "HTTP/1.1 404",
+        "Content-Type: text/html",
+        `Content-Length: ${errorRes.length}`,
+        "\r\n"
+        ].join("\r\n");
+
+    // create upgrade request error response
+    const errorResponseString = resHeaders + errorRes;
+
+    const errorResponse = new Buffer.from(errorResponseString);
+
+    socket.write(errorResponse);
+}
+
+/**
+
 function httpError501( socket )
 
     Socket: (Object)
@@ -50,14 +82,20 @@ Description:
 export function httpError501(socket){
     // 501 not implemented
 
+    const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h2>Error 501, not implemented</h2></body></html>"
+
     // set headers for upgrade request error response, 501 not implemented
     const resHeaders = [
         "HTTP/1.1 501",
+        "Content-Type: text/html",
+        `Content-Length: ${errorRes.length}`,
         "\r\n"
         ].join("\r\n");
 
     // create upgrade request error response
-    const errorResponse = new Buffer.from(resHeaders);
+    const errorResponseString = resHeaders + errorRes;
+
+    const errorResponse = new Buffer.from(errorResponseString);
 
     // send upgrade request error response
     socket.write(errorResponse);
@@ -80,7 +118,7 @@ Description:
 export function httpError500(socket){
     // 500 internal server error
 
-    const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h3>Error 500, Internal server error</h3></body></html>"
+    const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h2>Error 500, Internal server error</h2></body></html>"
 
     // setting error headers, 500 internal server error
     const resHeaders = [

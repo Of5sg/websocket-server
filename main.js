@@ -98,10 +98,9 @@ const server = net.createServer((socket) => {
 
             const requestObj = splitLines(data);
 
-            console.log(data.toString());
+            console.log(requestObj);
 
             if(requestObj.method === "GET"){
-
 
                 switch(requestObj.path){
 
@@ -164,8 +163,17 @@ const server = net.createServer((socket) => {
                     default:
 
                         console.error("Unknown path");
+                        
+                        // send response 404 not found
+                        httpRes.httpError404(socket);
+
 
                 };
+
+            }else if(!("method" in requestObj)){
+
+                console.error("Method missing");
+
             };
         };
     });
