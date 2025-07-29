@@ -1,11 +1,11 @@
 import net from "net";
 import { Buffer } from "buffer";
-import { DeconstFrame } from "./server_components/frame_interpreter.js";
-import { Opening_Handshake } from "./server_components/handshakes.js";
-import { OpcodeSwitch, TCPBuffToFrame } from "./server_components/server_components.js";
-import { ConstrFrame } from "./server_components/frame_constructor.js";
-import { RandomString, splitLines } from "./server_components/utils.js";
 import { readFileSync } from "fs";
+import { Opening_Handshake } from "./server_components/handshakes.js";
+import { DeconstFrame } from "./server_components/frame_interpreter.js";
+import { ConstrFrame } from "./server_components/frame_constructor.js";
+import { OpcodeSwitch, TCPBuffToFrame } from "./server_components/server_components.js";
+import { RandomString, splitLines } from "./server_components/utils.js";
 import * as httpRes from "./server_components/http_responses.js";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
@@ -163,7 +163,7 @@ const server = net.createServer((socket) => {
                     default:
 
                         console.error("Unknown path");
-                        
+
                         // send response 404 not found
                         httpRes.httpError404(socket);
 

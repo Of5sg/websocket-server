@@ -35,6 +35,8 @@ export function httpResponse200html(socket, page){
 
 };
 
+
+
 /**
 
 function httpError404( socket )
@@ -66,6 +68,8 @@ export function httpError404(socket){
 
     socket.write(errorResponse);
 }
+
+
 
 /**
 
@@ -101,6 +105,8 @@ export function httpError501(socket){
     socket.write(errorResponse);
 
 };
+
+
 
 /**
 
