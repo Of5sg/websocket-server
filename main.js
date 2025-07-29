@@ -6,6 +6,7 @@ import { OpcodeSwitch, TCPBuffToFrame } from "./server_components/server_compone
 import { ConstrFrame } from "./server_components/frame_constructor.js";
 import { RandomString, splitLines } from "./server_components/utils.js";
 import { readFileSync } from "fs";
+import * as httpRes from "./server_components/http_responses.js";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
@@ -91,6 +92,7 @@ const server = net.createServer((socket) => {
 
         }else{
 
+            //// NEEDS CLEANUP!!
 
             // if handshake is not complete, and connection not websocket
 
@@ -124,69 +126,28 @@ const server = net.createServer((socket) => {
                                 console.error("Unrecognized upgrade request");
                                 console.error(requestObj.upgrade);
                                 
-                                // set headers for upgrade request error response, 501 not implemented
-                                const resHeaders = [
-                                    "HTTP/1.1 501",
-                                    "\r\n"
-                                    ].join("\r\n");
-
-                                // create upgrade request error response
-                                const errorResponse = new Buffer.from(resHeaders);
-
-                                // send upgrade request error response
-                                socket.write(errorResponse);
+                                httpRes.httpError501(socket);
 
                             };
 
                         }else{
 
                             // logic for sendig home page
-
                             try{
 
                                 // loading the html
                                 const homePage = readFileSync("./test.html", {encoding: "utf8"});
-
-                                // creating response headers, 200 OK
-                                const responseHeaders = [
-                                    "HTTP/1.1 200",
-                                    "Content-Type: text/html",
-                                    `Content-Length: ${homePage.length}`,
-                                    "\r\n"
-                                    ].join("\r\n");
-
-                                // creating full response
-                                const responseString = responseHeaders + homePage;
-
-                                const response = new Buffer.from(responseString);
-
-                                // sending response
-                                socket.write(response);
+                                
+                                // sending http response, 200 OK
+                                httpRes.httpResponse200(socket, homePage);
 
                             }catch(error){
 
                                 console.error("Problem sending Homepage");
                                 console.error(error);
 
-                                // for sending an error response to the client
-
-                                const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h3>Error 500, Internal server error</h3></body></html>"
-
-                                // setting error headers, 500 internal server error
-                                const resHeaders = [
-                                    "HTTP/1.1 500",
-                                    "Content-Type: text/html",
-                                    `Content-Length: ${errorRes.length}`,
-                                    "\r\n"
-                                    ].join("\r\n");
-
-                                // create error response
-                                const errorResponseString = resHeaders + errorRes;
-
-                                const errorResponse = new Buffer.from(errorResponseString);
-                                
-                                // send error response
-                                socket.write(errorResponse);
+                                // sending http error, 500 internal server error
+                                httpRes.httpError500(socket);
 
                             };
 
@@ -194,15 +155,11 @@ const server = net.createServer((socket) => {
 
                         break;
 
-
-
                     case "/about":
 
                         // logic for sending about page
 
                         break;
-
-
 
                     default:
 
