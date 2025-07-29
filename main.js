@@ -14,11 +14,6 @@ const server = net.createServer((socket) => {
 
     // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
-    // websocket-extensions, deflate
-    let websock_extensions = false;
-    let permessage_deflate = false;
-    let client_max_window_bits = false;
-
     // to persist ping timing
     let pingTimer1;
 
@@ -77,12 +72,6 @@ const server = net.createServer((socket) => {
 
                 // Convert to object
                 const websocketFrame = DeconstFrame(frameBuffer);
-
-                // Inflate Algorithm
-                // WebsocketInflate(websocketFrame);
-                // for extensions and algorithms// LZ77 and Huffman coding, (LZSS based on LZ77)
-                // https://datatracker.ietf.org/doc/html/rfc7692#section-7
-                // https://datatracker.ietf.org/doc/html/rfc1951#section-2
                 
                 // Run opcode switch
                 OpcodeSwitch(websocketFrame, socket, pingMessage, pingTimer1, pingTimer2);
@@ -100,14 +89,6 @@ const server = net.createServer((socket) => {
             // http-handshake
             const response = Opening_Handshake(data);
             socket.write(response.res);
-
-            // // setting extension variables, to indicate whether extensions have been negotiated
-            // permessage_deflate = response.deflate.permessage_deflate;
-            // client_max_window_bits = response.deflate.client_max_window_bits;
-
-            // if(permessage_deflate === true){
-            //     websock_extensions = true;
-            // };
 
             // setting websock to true, indicating websocket-connection
             websock = true;
