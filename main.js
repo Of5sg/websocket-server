@@ -7,6 +7,7 @@ import { ConstrFrame } from "./server_components/frame_constructor.js";
 import { RandomString } from "./server_components/utils.js";
 import { splitLines } from "./server_components/utils.js";
 import { readFileSync } from "fs";
+import { request } from "http";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
@@ -118,6 +119,10 @@ const server = net.createServer((socket) => {
 
                                 // setting websock to true, indicating websocket-connection
                                 websock = true;
+                            }else{
+
+                                console.error("Unrecognized upgrade request");
+                                console.error(requestObj.upgrade);
                             };
 
                         }else{
@@ -126,7 +131,7 @@ const server = net.createServer((socket) => {
                             try{
 
                                 // loading the html
-                                const homePage = readFileSync("./test.htmsl", {encoding: "utf8"});
+                                const homePage = readFileSync("./test.html", {encoding: "utf8"});
 
                                 // creating response headers
                                 const responseHeaders = [
