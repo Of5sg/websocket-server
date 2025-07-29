@@ -1,4 +1,3 @@
-import { splitLines } from "./utils.js";
 import crypto from "crypto";
 
 /**
@@ -7,8 +6,8 @@ import crypto from "crypto";
 
 function Opening_Handshake( data )
 
-    data: (Buffer)
-        - the opening handshake from the client.
+    requestObj: (Object)
+        - the opening handshake from the client, turned into an Object.
 
 Returns: (Buffer)
     -the server-side handshake, accepting the connection
@@ -16,37 +15,13 @@ Returns: (Buffer)
 -----------------------------
 
 Description:
-this function takes the client-handshake, and creates a response.
+this function takes the client-Websocket-handshake, and creates a response.
 */
 export function Opening_Handshake(requestObj){
 
     // https://datatracker.ietf.org/doc/html/rfc6455#section-4.2.1
 
     console.log(requestObj);
-
-    // handling extensions
-    let extensions = "";
-
-    // let deflate = {
-    //     permessage_deflate: false,
-    //     client_max_window_bits: false
-    // };
-    
-    // const clientExtensions = requestObj.sec_websocket_extensions.split("; ");
-
-    // if (clientExtensions.includes("permessage-deflate")){
-
-    //     extensions += "permessage-deflate";
-
-    //     deflate.permessage_deflate = true;
-
-    //     if (clientExtensions.includes("client_max_window_bits")){
-
-    //         extensions += "; client_max_window_bits";
-
-    //         deflate.client_max_window_bits = true;
-    //     };
-    // };
 
     // create response-key
     const acceptKey = crypto
@@ -66,8 +41,6 @@ export function Opening_Handshake(requestObj){
 
     console.log("response:\n", responseHeaders)
     const response = Buffer.from(responseHeaders);
-
-    // return {res: response, deflate: deflate};
 
     return {res: response}
     
