@@ -210,14 +210,12 @@ Returns:
 -------------------------------------
 
 Description:
-This function assumes we have recieved the datapackets in the right order.
 
-It establishes the length of the Websocket-Frame, then checks if the total Byte-length of the frame is more than the Byte-length of the buffer.
+this function establishes the length of the Websocket-Frame, then checks if the total Byte-length of the frame is more than the Byte-length of the buffer.
 
     -if true, the server should wait for the next datapacket to arrive on the TCP-stream\(the next socket.on("data") event) and run the function again.
     
     -if false, the server can continue, and read the entire frame.
- 
  
 */
 
