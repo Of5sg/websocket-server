@@ -16,7 +16,7 @@ export function SocketInit(socket){
     // socket.datastore is for storing the data i need to persist
     // socket.localTemp is for pings and timing
     // socket.state is for storing the state of the connection, for instance: wheter it is a websocket connection
-    socket.localTemp = {};
+    socket.timing = {};
     socket.dataStore = {};
     socket.state = {};
 

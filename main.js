@@ -16,9 +16,9 @@ const server = net.createServer((socket) => {
     // sending a websocket ping to the client, if connection is websocket
     setInterval(() => {
         if(socket.state.websocket_connection === true){
-            socket.localTemp.pingMessage = RandomString(15);
-            const pingFrame = ConstrFrame(1, 0x9, socket.localTemp.pingMessage);
-            socket.localTemp.pingTimer1 =  performance.now();
+            socket.timing.pingMessage = RandomString(15);
+            const pingFrame = ConstrFrame(1, 0x9, socket.timing.pingMessage);
+            socket.timing.pingTimer1 =  performance.now();
             socket.write(pingFrame);
         };
     }, 2000);
@@ -27,9 +27,8 @@ const server = net.createServer((socket) => {
     socket.on("data", (data) => {
 
         // for ping and pong frames, this is when the pong is recieved.
-        socket.localTemp.pingTimer2 = performance.now();
+        socket.timing.pingTimer2 = performance.now();
 
-        
         if(socket.state.websocket_connection === true){
             
             // if websocket-connection

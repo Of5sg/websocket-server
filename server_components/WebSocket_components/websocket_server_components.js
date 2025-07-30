@@ -172,15 +172,15 @@ export function OpcodeSwitch(incommingFrame, socket){
 
             // here i recieve a pong frame, for a ping i have sent
 
-            if(incommingFrame.payload.toString() === socket.localTemp.pingMessage){
+            if(incommingFrame.payload.toString() === socket.timing.pingMessage){
                 console.log("Pong payload returned successfully");
             }else{
                 console.warn("WARNING: PONG PAYLOAD MISMATCH");
-                console.log("\tPing message:", socket.localTemp.pingMessage);
+                console.log("\tPing message:", socket.timing.pingMessage);
                 console.log("\tPong response:", incommingFrame.payload.toString());
             };
 
-            console.log("Ping:", (socket.localTemp.pingTimer2 - socket.localTemp.pingTimer1), "\n");
+            console.log("Ping:", (socket.timing.pingTimer2 - socket.timing.pingTimer1), "\n");
 
             break;
 
