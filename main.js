@@ -1,10 +1,11 @@
 import net from "net";
 import { readFileSync } from "fs";
-import { Opening_Handshake } from "./server_components/handshakes.js";
-import { ConstrFrame } from "./server_components/frame_constructor.js";
-import { FrameHandling, SocketInit } from "./server_components/server_components.js";
+import { Opening_Handshake } from "./server_components/HTTP_components/handshakes.js";
+import { ConstrFrame } from "./server_components/WebSocket_components/frame_constructor.js";
+import { FrameHandling } from "./server_components/WebSocket_components/websocket_server_components.js";
 import { RandomString, splitLines } from "./server_components/utils.js";
-import * as httpRes from "./server_components/http_responses.js";
+import { SocketInit } from "./server_components/general_server_components.js";
+import * as httpRes from "./server_components/HTTP_components/http_responses.js";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 

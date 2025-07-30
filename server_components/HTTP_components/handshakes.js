@@ -19,8 +19,6 @@ this function takes the client-Websocket-handshake, and creates a response.
 */
 export function Opening_Handshake(requestObj){
 
-    // https://datatracker.ietf.org/doc/html/rfc6455#section-4.2.1
-
     console.log(requestObj);
 
     // create response-key
