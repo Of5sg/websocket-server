@@ -8,27 +8,31 @@ function httpResponse200html( socket, page )
 
     Page: (String)
         - the page to be displayed
+    
+    Mimetype: (String)
+        - the pages mime type
 
 -------------------------------------------------
 Description:
 
     Sends response: 200 OK, and the requested page
  */
-export function httpResponse200html(socket, page){
+export function httpResponse200(socket, page, mimetype){
     // 200 OK
+
+    const pageBuffer = Buffer.from(page);
 
     // creating response headers, 200 OK
     const responseHeaders = [
         "HTTP/1.1 200",
-        "Content-Type: text/html",
-        `Content-Length: ${page.length}`,
+        `Content-Type: ${mimetype}`,
+        `Content-Length: ${pageBuffer.byteLength}`,
         "\r\n"
         ].join("\r\n");
 
-    // creating full response
-    const responseString = responseHeaders + page;
+    const responseBuffer = Buffer.from(responseHeaders);
 
-    const response = new Buffer.from(responseString);
+    const response = Buffer.concat([responseBuffer, pageBuffer]);
 
     // sending response
     socket.end(response);
@@ -54,17 +58,19 @@ export function httpError404(socket){
 
     const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h2>Error 404, not found</h2></body></html>"
 
+    const errorPageBuffer = Buffer.from(errorRes);
+
     const resHeaders = [
         "HTTP/1.1 404",
         "Content-Type: text/html",
-        `Content-Length: ${errorRes.length}`,
+        `Content-Length: ${errorPageBuffer.byteLength}`,
         "\r\n"
         ].join("\r\n");
 
     // create upgrade request error response
-    const errorResponseString = resHeaders + errorRes;
+    const errorHeaderBuffer = Buffer.from(resHeaders);
 
-    const errorResponse = new Buffer.from(errorResponseString);
+    const errorResponse = Buffer.concat([errorHeaderBuffer, errorPageBuffer]);
 
     socket.end(errorResponse);
 }
@@ -88,18 +94,20 @@ export function httpError501(socket){
 
     const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h2>Error 501, not implemented</h2></body></html>"
 
+    const errorPageBuffer = Buffer.from(errorRes);
+
     // set headers for upgrade request error response, 501 not implemented
     const resHeaders = [
         "HTTP/1.1 501",
         "Content-Type: text/html",
-        `Content-Length: ${errorRes.length}`,
+        `Content-Length: ${errorPageBuffer.byteLength}`,
         "\r\n"
         ].join("\r\n");
 
     // create upgrade request error response
-    const errorResponseString = resHeaders + errorRes;
+    const errorHeaderBuffer = Buffer.from(resHeaders);
 
-    const errorResponse = new Buffer.from(errorResponseString);
+    const errorResponse = Buffer.concat([errorHeaderBuffer, errorPageBuffer]);
 
     // send upgrade request error response
     socket.end(errorResponse);
@@ -126,18 +134,20 @@ export function httpError500(socket){
 
     const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h2>Error 500, Internal server error</h2></body></html>"
 
+    const errorPageBuffer = Buffer.from(errorRes);
+
     // setting error headers, 500 internal server error
     const resHeaders = [
         "HTTP/1.1 500",
         "Content-Type: text/html",
-        `Content-Length: ${errorRes.length}`,
+        `Content-Length: ${errorPageBuffer.byteLength}`,
         "\r\n"
         ].join("\r\n");
 
     // create error response
-    const errorResponseString = resHeaders + errorRes;
+    const errorHeaderBuffer = Buffer.from(resHeaders);
 
-    const errorResponse = new Buffer.from(errorResponseString);
+    const errorResponse = Buffer.concat([errorHeaderBuffer, errorPageBuffer]);
     
     // send error response
     socket.end(errorResponse);

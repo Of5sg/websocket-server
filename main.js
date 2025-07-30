@@ -56,7 +56,7 @@ const server = net.createServer((socket) => {
                             const homePage = readFileSync("./test.html", {encoding: "utf8"});
                             
                             // sending http response, 200 OK
-                            httpResponse.httpResponse200html(socket, homePage);
+                            httpResponse.httpResponse200(socket, homePage, "text/html");
 
                         }catch(error){
 
@@ -100,6 +100,28 @@ const server = net.createServer((socket) => {
                     };
 
                     break;
+                
+                case "/styles.css":
+
+                    if(requestObj.method === "GET"){
+
+                        try{
+
+                            const stylesheet = readFileSync("./public/styles.css", {encoding: "utf8"});
+
+                            httpResponse.httpResponse200(socket, stylesheet, "text/css");
+
+                        }catch (error){
+
+                            console.error("Error:\n", error);
+
+                            httpResponse.httpError500;
+                            
+                        };
+
+                    };
+
+                    break;
 
                 default:
 
@@ -109,6 +131,7 @@ const server = net.createServer((socket) => {
                     httpResponse.httpError404(socket);
 
                     break;
+            
             };
         };
     });
