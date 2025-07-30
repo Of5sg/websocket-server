@@ -55,15 +55,6 @@ function OpcodeSwitch( incommingFrame, socket, pingTimer1, pingTimer2 )
     socket: (Object)
         - the Socket-Object returned by net.createServer()
 
-    pingMessage: (string)
-        - the payload of the sent Ping
-
-    pingTimer1: (Double)
-        - the time when a ping was sent from the server.
-
-    pingTimer2: (Double)
-        - the time when a pong was recieved from the client.
-
     -----------------------------------------
     "The function has two external" variables, in the socket Object:
     -----------------------------------------
@@ -80,7 +71,6 @@ function OpcodeSwitch( incommingFrame, socket, pingTimer1, pingTimer2 )
 
 Description:
 this function handles the "routing" based on opcodes, and executes the appropriate responses or logic.
-
 
 */
 
