@@ -5,7 +5,7 @@ try{
     let responsvariabel = "";
     let counter = 0;
 
-    const socket = new WebSocket(`ws://localhost:8000`);
+    const socket = new WebSocket(`ws://localhost:8000/socketconnection`);
     
     socket.addEventListener("close", (mess) => {
         console.log("Close:\n", mess);

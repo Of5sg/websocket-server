@@ -1,5 +1,6 @@
 import { Buffer } from "buffer";
 import { ConstrFrame } from "./frame_constructor.js";
+import { DeconstFrame } from "./frame_interpreter.js";
 
 // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
@@ -67,11 +68,11 @@ function OpcodeSwitch( incommingFrame, socket, pingTimer1, pingTimer2 )
     "The function has two external" variables, in the socket Object:
     -----------------------------------------
 
-        socket.initialFrameBuffer: (Object)
+        socket.local.initialFrameBuffer: (Object)
 
             - this allows the function to persist the initial frame of a multiframe message.
         
-        socket.tempFINPayloadBuffer: (binary-Buffer)
+        socket.local.tempFINPayloadBuffer: (binary-Buffer)
 
             - this holds the message parts from all the subsequent frames, before they are appended all together to the payload of the initial Frame.
     
@@ -83,26 +84,26 @@ this function handles the "routing" based on opcodes, and executes the appropria
 
 */
 
-export function OpcodeSwitch(incommingFrame, socket, pingMessage, pingTimer1, pingTimer2){
+export function OpcodeSwitch(incommingFrame, socket){
 
     switch(incommingFrame.opcode){
 
         case 0x0:   // ----- continuation-frame ----- 
 
             // push payload to payload-buffer
-            socket.tempFINPayloadBuffer = Buffer.concat([socket.tempFINPayloadBuffer, incommingFrame.payload]);
+            socket.local.tempFINPayloadBuffer = Buffer.concat([socket.local.tempFINPayloadBuffer, incommingFrame.payload]);
             
             // if final frame in multiframe-message, process the message
             if(incommingFrame.FIN === 1){
 
                 // construct the completed frame from continuation-frames
-                incommingFrame = socket.initialFrameBuffer;
+                incommingFrame = socket.local.initialFrameBuffer;
                 incommingFrame.FIN = 1;
-                incommingFrame.payload = socket.tempFINPayloadBuffer;
+                incommingFrame.payload = socket.local.tempFINPayloadBuffer;
 
                 // reset buffer variables
-                socket.initialFrameBuffer = {};
-                socket.tempFINPayloadBuffer = Buffer.alloc(0);
+                socket.local.initialFrameBuffer = {};
+                socket.local.tempFINPayloadBuffer = Buffer.alloc(0);
 
                 // process the completed frame
                 FrameProcessing(incommingFrame);
@@ -122,9 +123,9 @@ export function OpcodeSwitch(incommingFrame, socket, pingMessage, pingTimer1, pi
             }else if(incommingFrame.FIN === 0){
 
                 // push initial frame to buffer
-                socket.initialFrameBuffer = incommingFrame;
+                socket.local.initialFrameBuffer = incommingFrame;
                 // push payload to payload-buffer
-                socket.tempFINPayloadBuffer = Buffer.concat([socket.tempFINPayloadBuffer, incommingFrame.payload]);
+                socket.local.tempFINPayloadBuffer = Buffer.concat([socket.local.tempFINPayloadBuffer, incommingFrame.payload]);
             
             };
 
@@ -141,9 +142,9 @@ export function OpcodeSwitch(incommingFrame, socket, pingMessage, pingTimer1, pi
             }else if(incommingFrame.FIN === 0){
 
                 // push initial frame to buffer
-                socket.initialFrameBuffer = incommingFrame;
+                socket.local.initialFrameBuffer = incommingFrame;
                 // push payload to payload-buffer
-                socket.tempFINPayloadBuffer = Buffer.concat([socket.tempFINPayloadBuffer, incommingFrame.payload]);
+                socket.local.tempFINPayloadBuffer = Buffer.concat([socket.local.tempFINPayloadBuffer, incommingFrame.payload]);
             
             };
 
@@ -178,15 +179,15 @@ export function OpcodeSwitch(incommingFrame, socket, pingMessage, pingTimer1, pi
 
             // here i recieve a pong frame, for a ping i have sent
 
-            if(incommingFrame.payload.toString() === pingMessage){
+            if(incommingFrame.payload.toString() === socket.localTemp.pingMessage){
                 console.log("Pong payload returned successfully");
             }else{
                 console.warn("WARNING: PONG PAYLOAD MISMATCH");
-                console.log("\tPing message:", pingMessage);
+                console.log("\tPing message:", socket.localTemp.pingMessage);
                 console.log("\tPong response:", incommingFrame.payload.toString());
             };
 
-            console.log("Ping:", (pingTimer2 - pingTimer1), "\n");
+            console.log("Ping:", (socket.localTemp.pingTimer2 - socket.localTemp.pingTimer1), "\n");
 
             break;
 
@@ -285,3 +286,58 @@ export function TCPBuffToFrame(streamBuffer){
     
 };
 
+export function FrameHandling(data, socket){
+
+    // push data to buffer
+    socket.local.streamBuffer = Buffer.concat([socket.local.streamBuffer, data]);
+
+    // calculate length of frame in Buffer, and if frame is complete
+    const bufferedFrameLength = TCPBuffToFrame(socket.local.streamBuffer);
+
+    if(bufferedFrameLength !== null){
+        // Frame completely assembled
+        
+        // convert BigInt to Number
+        let endOfFrame = 0;
+        if(bufferedFrameLength <= Number.MAX_SAFE_INTEGER){
+            endOfFrame = Number(bufferedFrameLength);
+        }else{
+            console.error("Frame-Length exceeds the MAX_SAFE_INTEGER value for Number");
+        };
+
+        // extract Frame from socket.local.streamBuffer
+        const frameBuffer = [...(socket.local.streamBuffer.subarray(0, endOfFrame))];
+
+        // remove frame from socket.local.streamBuffer
+        socket.local.streamBuffer = socket.local.streamBuffer.subarray(endOfFrame);
+
+        // Convert to object
+        const websocketFrame = DeconstFrame(frameBuffer);
+
+        // Run opcode switch
+        OpcodeSwitch(websocketFrame, socket);
+
+    }else{
+
+        // Frame incomplete: wait for the entire frame to be Buffered
+        console.log("waiting for entire Websocket-Frame to enter Buffer.");
+
+    };
+
+};
+
+export function SocketInit(socket){
+
+    // socket.local and socket.localTemp is for storing data i need to persist
+    socket.localTemp = {};
+    socket.local = {};
+
+    // this is the buffer for the incomming TCP-Messages
+    socket.local.streamBuffer = Buffer.alloc(0);
+    socket.local.websocket_connection = false;
+
+    // variables for buffering messages fragmented over several Websocket-Frames, used in the opcodeSwitch() function.
+    socket.local.initialFrameBuffer = {};
+    socket.local.tempFINPayloadBuffer = Buffer.alloc(0);
+
+};

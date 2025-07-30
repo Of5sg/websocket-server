@@ -1,10 +1,8 @@
 import net from "net";
-import { Buffer } from "buffer";
 import { readFileSync } from "fs";
 import { Opening_Handshake } from "./server_components/handshakes.js";
-import { DeconstFrame } from "./server_components/frame_interpreter.js";
 import { ConstrFrame } from "./server_components/frame_constructor.js";
-import { OpcodeSwitch, TCPBuffToFrame } from "./server_components/server_components.js";
+import { FrameHandling, SocketInit } from "./server_components/server_components.js";
 import { RandomString, splitLines } from "./server_components/utils.js";
 import * as httpRes from "./server_components/http_responses.js";
 
@@ -12,83 +10,30 @@ import * as httpRes from "./server_components/http_responses.js";
 
 const server = net.createServer((socket) => {
 
-    let websock = false;
-
     // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
-    // to persist ping timing
-    let pingTimer1;
+    SocketInit(socket);
 
-    // for ping payload
-    let pingMessage = "";
-
-    // sending a ping to the client.
+    // sending a websocket ping to the client.
     setInterval(() => {
-        if(websock === true){
-            pingMessage = RandomString(15);
-            const pingFrame = ConstrFrame(1, 0x9, pingMessage);
-            pingTimer1 =  performance.now();
+        if(socket.local.websocket_connection === true){
+            socket.localTemp.pingMessage = RandomString(15);
+            const pingFrame = ConstrFrame(1, 0x9, socket.localTemp.pingMessage);
+            socket.localTemp.pingTimer1 =  performance.now();
             socket.write(pingFrame);
         };
     }, 2000);
 
-    // this is the buffer for the incomming TCP-Stream
-    let streamBuffer = Buffer.alloc(0);
-
-    // variables for buffering messages fragmented over several Websocket-Frames, used in the opcodeSwitch() function.
-    socket.initialFrameBuffer = {};
-    socket.tempFINPayloadBuffer = Buffer.alloc(0);
-
     // data event
     socket.on("data", (data) => {
 
-
         // for ping and pong frames, this is when the pong is recieved.
-        const pingTimer2 = performance.now();
+        socket.localTemp.pingTimer2 = performance.now();
 
         // if handshake is complete
-        if(websock === true){
+        if(socket.local.websocket_connection === true){
 
-
-
-            // push data to buffer
-            streamBuffer = Buffer.concat([streamBuffer, data]);
-
-            // calculate length of frame in Buffer, and if frame is complete
-            const bufferedFrameLength = TCPBuffToFrame(streamBuffer);
-
-            if(bufferedFrameLength !== null){
-                // Frame completely assembled
-                
-                // convert BigInt to Number
-                let endOfFrame = 0;
-
-                if(bufferedFrameLength <= Number.MAX_SAFE_INTEGER){
-                    endOfFrame = Number(bufferedFrameLength);
-                }else{
-                    console.error("Frame-Length exceeds the MAX_SAFE_INTEGER value for Number");
-                };
-
-                // extract Frame from streamBuffer
-                const frameBuffer = [...(streamBuffer.subarray(0, endOfFrame))];
-
-                // remove frame from streamBuffer
-                streamBuffer = streamBuffer.subarray(endOfFrame);
-
-                // Convert to object
-                const websocketFrame = DeconstFrame(frameBuffer);
-
-                // Run opcode switch
-                OpcodeSwitch(websocketFrame, socket, pingMessage, pingTimer1, pingTimer2);
-
-            }else{
-
-                // Frame incomplete: wait for the entire frame to be Buffered
-                console.log("waiting for entire Websocket-Frame to enter Buffer.");
-
-            };
-
-
+            FrameHandling(data, socket);
 
         }else{
 
@@ -100,80 +45,72 @@ const server = net.createServer((socket) => {
 
             console.log(requestObj);
 
-            if(requestObj.method === "GET"){
+            switch(requestObj.path){
 
-                switch(requestObj.path){
+                case "/":
 
-                    case "/":
+                    if(requestObj.method === "GET"){
 
-                        if(requestObj.connection === "upgrade"){
-                            // if request is for upgrade
+                        // logic for sendig home page
+                        try{
 
-                            if(requestObj.upgrade === "websocket"){
-                                // if upgrade request is for websocket
+                            // loading the html
+                            const homePage = readFileSync("./test.html", {encoding: "utf8"});
+                            
+                            // sending http response, 200 OK
+                            httpRes.httpResponse200html(socket, homePage);
 
-                                // http-handshake
-                                const response = Opening_Handshake(requestObj);
-                                socket.write(response.res);
+                        }catch(error){
 
-                                // setting websock to true, indicating websocket-connection
-                                websock = true;
+                            console.error("Problem sending Homepage");
+                            console.error(error);
 
-                            }else{
+                            // sending http error, 500 internal server error
+                            httpRes.httpError500(socket);
 
-                                // if upgrade request is for anything other than WebSocket
-                                console.error("Unrecognized upgrade request");
-                                console.error(requestObj.upgrade);
-                                
-                                httpRes.httpError501(socket);
+                        };
+                    };
 
-                            };
+                    break;
+
+                case "/socketconnection":
+
+                    // for upgrading to websocket
+                    if(requestObj.connection === "upgrade"){
+                        // if request is for upgrade
+
+                        if(requestObj.upgrade === "websocket"){
+                            // if upgrade request is for websocket
+
+                            // http-handshake
+                            const response = Opening_Handshake(requestObj);
+                            socket.write(response.res);
+
+                            // setting websock to true, indicating websocket-connection
+                            socket.local.websocket_connection = true;
 
                         }else{
 
-                            // logic for sendig home page
-                            try{
-
-                                // loading the html
-                                const homePage = readFileSync("./test.html", {encoding: "utf8"});
-                                
-                                // sending http response, 200 OK
-                                httpRes.httpResponse200html(socket, homePage);
-
-                            }catch(error){
-
-                                console.error("Problem sending Homepage");
-                                console.error(error);
-
-                                // sending http error, 500 internal server error
-                                httpRes.httpError500(socket);
-
-                            };
+                            // if upgrade request is for anything other than WebSocket
+                            console.error("Unrecognized upgrade request");
+                            console.error(requestObj.upgrade);
+                            
+                            httpRes.httpError501(socket);
 
                         };
 
-                        break;
+                    };
 
-                    case "/about":
+                    break;
 
-                        // logic for sending about page
+                default:
 
-                        break;
+                    console.error("Unknown path", requestObj.path);
 
-                    default:
+                    // send response 404 not found
+                    httpRes.httpError404(socket);
 
-                        console.error("Unknown path");
-
-                        // send response 404 not found
-                        httpRes.httpError404(socket);
-
-
-                };
-
-            }else if(!("method" in requestObj)){
-
-                console.error("Method missing");
-
+                    break;
             };
         };
     });
