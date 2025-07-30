@@ -10,13 +10,11 @@ import * as httpRes from "./server_components/http_responses.js";
 
 const server = net.createServer((socket) => {
 
-    // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
-
     SocketInit(socket);
 
-    // sending a websocket ping to the client.
+    // sending a websocket ping to the client, if connection is websocket
     setInterval(() => {
-        if(socket.local.websocket_connection === true){
+        if(socket.state.websocket_connection === true){
             socket.localTemp.pingMessage = RandomString(15);
             const pingFrame = ConstrFrame(1, 0x9, socket.localTemp.pingMessage);
             socket.localTemp.pingTimer1 =  performance.now();
@@ -31,7 +29,7 @@ const server = net.createServer((socket) => {
         socket.localTemp.pingTimer2 = performance.now();
 
         
-        if(socket.local.websocket_connection === true){
+        if(socket.state.websocket_connection === true){
             
             // if websocket-connection
 
@@ -87,7 +85,7 @@ const server = net.createServer((socket) => {
                             socket.write(response.res);
 
                             // setting websock to true, indicating websocket-connection
-                            socket.local.websocket_connection = true;
+                            socket.state.websocket_connection = true;
 
                         }else{
 

@@ -63,11 +63,11 @@ function OpcodeSwitch( incommingFrame, socket, pingTimer1, pingTimer2 )
     "The function has two external" variables, in the socket Object:
     -----------------------------------------
 
-        socket.local.initialFrameBuffer: (Object)
+        socket.dataStore.initialFrameBuffer: (Object)
 
             - this allows the function to persist the initial frame of a multiframe message.
         
-        socket.local.tempFINPayloadBuffer: (binary-Buffer)
+        socket.dataStore.tempFINPayloadBuffer: (binary-Buffer)
 
             - this holds the message parts from all the subsequent frames, before they are appended all together to the payload of the initial Frame.
     
@@ -86,19 +86,19 @@ export function OpcodeSwitch(incommingFrame, socket){
         case 0x0:   // ----- continuation-frame ----- 
 
             // push payload to payload-buffer
-            socket.local.tempFINPayloadBuffer = Buffer.concat([socket.local.tempFINPayloadBuffer, incommingFrame.payload]);
+            socket.dataStore.tempFINPayloadBuffer = Buffer.concat([socket.dataStore.tempFINPayloadBuffer, incommingFrame.payload]);
             
             // if final frame in multiframe-message, process the message
             if(incommingFrame.FIN === 1){
 
                 // construct the completed frame from continuation-frames
-                incommingFrame = socket.local.initialFrameBuffer;
+                incommingFrame = socket.dataStore.initialFrameBuffer;
                 incommingFrame.FIN = 1;
-                incommingFrame.payload = socket.local.tempFINPayloadBuffer;
+                incommingFrame.payload = socket.dataStore.tempFINPayloadBuffer;
 
                 // reset buffer variables
-                socket.local.initialFrameBuffer = {};
-                socket.local.tempFINPayloadBuffer = Buffer.alloc(0);
+                socket.dataStore.initialFrameBuffer = {};
+                socket.dataStore.tempFINPayloadBuffer = Buffer.alloc(0);
 
                 // process the completed frame
                 FrameProcessing(incommingFrame);
@@ -118,9 +118,9 @@ export function OpcodeSwitch(incommingFrame, socket){
             }else if(incommingFrame.FIN === 0){
 
                 // push initial frame to buffer
-                socket.local.initialFrameBuffer = incommingFrame;
+                socket.dataStore.initialFrameBuffer = incommingFrame;
                 // push payload to payload-buffer
-                socket.local.tempFINPayloadBuffer = Buffer.concat([socket.local.tempFINPayloadBuffer, incommingFrame.payload]);
+                socket.dataStore.tempFINPayloadBuffer = Buffer.concat([socket.dataStore.tempFINPayloadBuffer, incommingFrame.payload]);
             
             };
 
@@ -137,9 +137,9 @@ export function OpcodeSwitch(incommingFrame, socket){
             }else if(incommingFrame.FIN === 0){
 
                 // push initial frame to buffer
-                socket.local.initialFrameBuffer = incommingFrame;
+                socket.dataStore.initialFrameBuffer = incommingFrame;
                 // push payload to payload-buffer
-                socket.local.tempFINPayloadBuffer = Buffer.concat([socket.local.tempFINPayloadBuffer, incommingFrame.payload]);
+                socket.dataStore.tempFINPayloadBuffer = Buffer.concat([socket.dataStore.tempFINPayloadBuffer, incommingFrame.payload]);
             
             };
 
@@ -300,10 +300,10 @@ function FrameHandling( data, socket )
 export function FrameHandling(data, socket){
 
     // push data to buffer
-    socket.local.streamBuffer = Buffer.concat([socket.local.streamBuffer, data]);
+    socket.dataStore.streamBuffer = Buffer.concat([socket.dataStore.streamBuffer, data]);
 
     // calculate length of frame in Buffer, and if frame is complete
-    const bufferedFrameLength = TCPBuffToFrame(socket.local.streamBuffer);
+    const bufferedFrameLength = TCPBuffToFrame(socket.dataStore.streamBuffer);
 
     if(bufferedFrameLength !== null){
         // Frame completely assembled
@@ -316,11 +316,11 @@ export function FrameHandling(data, socket){
             console.error("Frame-Length exceeds the MAX_SAFE_INTEGER value for Number");
         };
 
-        // extract Frame from socket.local.streamBuffer
-        const frameBuffer = [...(socket.local.streamBuffer.subarray(0, endOfFrame))];
+        // extract Frame from socket.dataStore.streamBuffer
+        const frameBuffer = [...(socket.dataStore.streamBuffer.subarray(0, endOfFrame))];
 
-        // remove frame from socket.local.streamBuffer
-        socket.local.streamBuffer = socket.local.streamBuffer.subarray(endOfFrame);
+        // remove frame from socket.dataStore.streamBuffer
+        socket.dataStore.streamBuffer = socket.dataStore.streamBuffer.subarray(endOfFrame);
 
         // Convert to object
         const websocketFrame = DeconstFrame(frameBuffer);
@@ -351,16 +351,21 @@ Description:
 
 export function SocketInit(socket){
 
-    // socket.local and socket.localTemp is for storing data i need to persist
+    // socket.datastore is for storing the data i need to persist
+    // socket.localTemp is for pings and timing
+    // socket.state is for storing the state of the connection, for instance wheter it is a websocket connection
     socket.localTemp = {};
-    socket.local = {};
+    socket.dataStore = {};
+    socket.state = {};
 
     // this is the buffer for the incomming TCP-Messages
-    socket.local.streamBuffer = Buffer.alloc(0);
-    socket.local.websocket_connection = false;
+    socket.dataStore.streamBuffer = Buffer.alloc(0);
+
+    // this is for whether the connection is a websocket connection or not
+    socket.state.websocket_connection = false;
 
     // variables for buffering messages fragmented over several Websocket-Frames, used in the opcodeSwitch() function.
-    socket.local.initialFrameBuffer = {};
-    socket.local.tempFINPayloadBuffer = Buffer.alloc(0);
+    socket.dataStore.initialFrameBuffer = {};
+    socket.dataStore.tempFINPayloadBuffer = Buffer.alloc(0);
 
 };
