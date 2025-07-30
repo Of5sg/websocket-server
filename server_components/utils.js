@@ -32,7 +32,7 @@ export function splitLines(incommingBuff){
         for (const parameter of split){
 
             // split http handshake request to key/value
-            if(parameter.slice(0, 3) !== "GET" && parameter !== ""){
+            if(parameter.split(" ")[0] !== "GET" && parameter !== ""){
 
                 const temp = parameter.split(": ");
 
