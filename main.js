@@ -5,7 +5,7 @@ import { ConstrFrame } from "./server_components/WebSocket_components/frame_cons
 import { FrameHandling } from "./server_components/WebSocket_components/websocket_server_components.js";
 import { RandomString, splitLines } from "./server_components/utils.js";
 import { SocketInit } from "./server_components/general_server_components.js";
-import * as httpRes from "./server_components/HTTP_components/http_responses.js";
+import * as httpResponse from "./server_components/HTTP_components/http_responses.js";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
@@ -56,7 +56,7 @@ const server = net.createServer((socket) => {
                             const homePage = readFileSync("./test.html", {encoding: "utf8"});
                             
                             // sending http response, 200 OK
-                            httpRes.httpResponse200html(socket, homePage);
+                            httpResponse.httpResponse200html(socket, homePage);
 
                         }catch(error){
 
@@ -64,7 +64,7 @@ const server = net.createServer((socket) => {
                             console.error(error);
 
                             // sending http error, 500 internal server error
-                            httpRes.httpError500(socket);
+                            httpResponse.httpError500(socket);
 
                         };
                     };
@@ -93,7 +93,7 @@ const server = net.createServer((socket) => {
                             console.error("Unrecognized upgrade request");
                             console.error(requestObj.upgrade);
                             
-                            httpRes.httpError501(socket);
+                            httpResponse.httpError501(socket);
 
                         };
 
@@ -103,10 +103,10 @@ const server = net.createServer((socket) => {
 
                 default:
 
-                    console.error("Unknown path", requestObj.path);
+                    console.error("Unknown path:", requestObj.path);
 
                     // send response 404 not found
-                    httpRes.httpError404(socket);
+                    httpResponse.httpError404(socket);
 
                     break;
             };

@@ -2,9 +2,6 @@ import fs from "fs/promises"
 
 try{
 
-    let responsvariabel = "";
-    let counter = 0;
-
     const socket = new WebSocket(`ws://localhost:8000/socketconnection`);
     
     socket.addEventListener("close", (mess) => {
