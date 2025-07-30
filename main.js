@@ -30,16 +30,16 @@ const server = net.createServer((socket) => {
         // for ping and pong frames, this is when the pong is recieved.
         socket.localTemp.pingTimer2 = performance.now();
 
-        // if handshake is complete
+        
         if(socket.local.websocket_connection === true){
+            
+            // if websocket-connection
 
             FrameHandling(data, socket);
 
         }else{
 
-            //// NEEDS CLEANUP!!
-
-            // if handshake is not complete, and connection not websocket
+            // if not websocket-connection
 
             const requestObj = splitLines(data);
 

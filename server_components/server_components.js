@@ -4,6 +4,8 @@ import { DeconstFrame } from "./frame_interpreter.js";
 
 // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
+
+
 /**
 ```
 ------------------------------------------
@@ -20,6 +22,7 @@ this function handles the logic of opcode 0x1 and 0x2, when we know the message 
 
 
 */
+
 
 export function FrameProcessing(completedFrame){
     switch (completedFrame.opcode){
@@ -41,6 +44,7 @@ export function FrameProcessing(completedFrame){
             console.error("opcode not 0x1 or 0x2, opcode:", completedFrame.opcode);
     };
 };
+
 
 
 /**
@@ -73,6 +77,7 @@ Description:
 this function handles the "routing" based on opcodes, and executes the appropriate responses or logic.
 
 */
+
 
 export function OpcodeSwitch(incommingFrame, socket){
 
@@ -189,6 +194,7 @@ export function OpcodeSwitch(incommingFrame, socket){
 };
 
 
+
 /**
 ```
 -------------------------------------
@@ -214,6 +220,7 @@ It establishes the length of the Websocket-Frame, then checks if the total Byte-
  
  
 */
+
 
 export function TCPBuffToFrame(streamBuffer){
 
@@ -276,6 +283,20 @@ export function TCPBuffToFrame(streamBuffer){
     
 };
 
+
+/**
+function FrameHandling( data, socket )
+
+    Data: (Buffer)
+
+        - the incomming data
+    
+    socket: (Object)
+
+        - the socket object returned by net.createServer()
+ */
+
+
 export function FrameHandling(data, socket){
 
     // push data to buffer
@@ -315,6 +336,18 @@ export function FrameHandling(data, socket){
     };
 
 };
+
+
+/**
+function SocketInit( socket )
+
+    Socket: (Object)
+        - the socket object returned by net.createServer()
+
+Description:
+    this function initializes objects inside of the socket object, for storage of data
+ */
+
 
 export function SocketInit(socket){
 
