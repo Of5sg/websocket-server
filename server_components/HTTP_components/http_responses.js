@@ -1,7 +1,7 @@
 
 /**
 
-function httpResponse200html( socket, page )
+function httpResponse200( socket, page, mimetype )
 
     Socket: (Object)
         - the socket-object returned by net.createServer()
@@ -56,7 +56,7 @@ Description:
 export function httpError404(socket){
     // 404 not found
 
-    const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h2>Error 404, not found</h2></body></html>"
+    const errorRes = `<!DOCTYPE html><html lang="nb-no"><head><meta charset="UTF-8"><title>Error</title></head><body><h2>Error 404, not found</h2></body></html>`;
 
     const errorPageBuffer = Buffer.from(errorRes);
 
@@ -92,7 +92,7 @@ Description:
 export function httpError501(socket){
     // 501 not implemented
 
-    const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h2>Error 501, not implemented</h2></body></html>"
+    const errorRes = `<!DOCTYPE html><html lang="nb-no"><head><meta charset="UTF-8"><title>Error</title></head><body><h2>Error 501, not implemented</h2></body></html>`;
 
     const errorPageBuffer = Buffer.from(errorRes);
 
@@ -132,7 +132,7 @@ Description:
 export function httpError500(socket){
     // 500 internal server error
 
-    const errorRes = "<!DOCTYPE html><html><head><title>Error</title></head><body><h2>Error 500, Internal server error</h2></body></html>"
+    const errorRes = `<!DOCTYPE html><html lang="nb-no"><head><meta charset="UTF-8"><title>Error</title></head><body><h2>Error 500, internal server error</h2></body></html>`;
 
     const errorPageBuffer = Buffer.from(errorRes);
 
