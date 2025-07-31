@@ -2,8 +2,9 @@
 <html lang="nb-no">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Test-side</title>
+        <title>Test page</title>
         <link rel="stylesheet" href="styles.css">
+        <link rel="icon" href="favicon.png">
         <base id="baseUrl">
         <script>
             const base = document.getElementById("baseUrl");
@@ -14,20 +15,20 @@
         <h2>This is a test page for the server.</h2>
         <form id="inputForm"></form>
         <article id="result"></article>
-        <script nonce="{nonce}">
+        <script>
             
-            // const worker = new Worker("webworker.js");
+            const worker = new Worker("webworker.js");
             
-            // worker.postMessage(`base_Url#aB29sal2108vnjksdhgmkjfhuiu-:-${document.getElementById("baseUrl").getAttribute("href")}`);
+            worker.postMessage(`base_Url#aB29sal2108vnjksdhgmkjfhuiu-:-${document.getElementById("baseUrl").getAttribute("href")}`);
             
-            // worker.onmessage = function (event) {
+            worker.onmessage = function (event) {
 
-            //     const p = document.createElement("p")
-            //     p.textContent = event.data
+                const p = document.createElement("p")
+                p.textContent = event.data
 
-            //     document.getElementById("result").appendChild(p);
+                document.getElementById("result").appendChild(p);
 
-            // };
+            };
             
         </script>
     </body>

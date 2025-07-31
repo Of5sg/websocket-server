@@ -37,9 +37,11 @@ export function Opening_Handshake(requestObj){
         "\r\n"
         ].join("\r\n");
 
-    console.log("response:\n", responseHeaders)
+    // logging for test purposes
+    // console.log("response:\n", responseHeaders);
+
     const response = Buffer.from(responseHeaders);
 
-    return {res: response}
+    return {res: response};
     
 };

@@ -21,7 +21,7 @@ const server = net.createServer((socket) => {
             socket.timing.pingTimer1 =  performance.now();
             socket.write(pingFrame);
         };
-    }, 2000);
+    }, 10000);
 
     // data event
     socket.on("data", (data) => {
@@ -70,11 +70,74 @@ const server = net.createServer((socket) => {
                     };
 
                     break;
+                
+                case "/styles.css":
+
+                    if(requestObj.method === "GET"){
+
+                        try{
+
+                            const stylesheet = readFileSync("./public/styles.css", {encoding: "utf8"});
+
+                            httpResponse.httpResponse200(socket, stylesheet, "text/css");
+
+                        }catch (error){
+
+                            console.error("Error:\n", error);
+
+                            httpResponse.httpError500(socket);
+                            
+                        };
+
+                    };
+
+                    break;
+
+                case "/webworker.js":
+
+                    if(requestObj.method === "GET"){
+
+                        try{
+
+                            const script = readFileSync("./public/webworker.js", {encoding: "utf8"});
+
+                            httpResponse.httpResponse200(socket, script, "application/javascript");
+
+                        }catch (error){
+
+                            console.error("Error:\n", error);
+
+                            httpResponse.httpError500(socket);
+                            
+                        };
+
+                    };
+
+                    break;
+                
+                case "/favicon.png":
+
+                    if(requestObj.method === "GET"){
+
+                        try{
+
+                            const icon = readFileSync("./public/favicon.png");
+                            httpResponse.httpResponse200(socket, icon, "image/x-icon");
+
+                        }catch(error){
+                            console.error("Error sending favicon:\n", error);
+                            httpResponse.httpError500(socket);
+                        };
+
+                    };
+                    
+                    break;
 
                 case "/socketconnection":
 
-                    // for upgrading to websocket
-                    if(requestObj.connection === "upgrade"){
+                    // for upgrading to websocket connection
+
+                    if(requestObj.connection === "Upgrade"){
                         // if request is for upgrade
 
                         if(requestObj.upgrade === "websocket"){
@@ -95,28 +158,6 @@ const server = net.createServer((socket) => {
                             
                             httpResponse.httpError501(socket);
 
-                        };
-
-                    };
-
-                    break;
-                
-                case "/styles.css":
-
-                    if(requestObj.method === "GET"){
-
-                        try{
-
-                            const stylesheet = readFileSync("./public/styles.css", {encoding: "utf8"});
-
-                            httpResponse.httpResponse200(socket, stylesheet, "text/css");
-
-                        }catch (error){
-
-                            console.error("Error:\n", error);
-
-                            httpResponse.httpError500(socket);
-                            
                         };
 
                     };
