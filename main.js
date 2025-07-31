@@ -137,7 +137,7 @@ const server = net.createServer((socket) => {
 
                     // for upgrading to websocket connection
 
-                    if(requestObj.connection === "Upgrade"){
+                    if(requestObj.connection === "Upgrade" || requestObj.connection === "upgrade"){
                         // if request is for upgrade
 
                         if(requestObj.upgrade === "websocket"){

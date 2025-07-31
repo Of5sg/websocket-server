@@ -19,8 +19,6 @@ this function takes the client-Websocket-handshake, and creates a response.
 */
 export function Opening_Handshake(requestObj){
 
-    console.log(requestObj);
-
     // create response-key
     const acceptKey = crypto
         .createHash("sha1")

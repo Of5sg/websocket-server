@@ -22,8 +22,6 @@ export function splitLines(incommingBuff){
     // convert to strings
     const requestObj = {};
 
-    console.log(incommingBuff.toString())
-
     if(incommingBuff !== undefined){
 
         const stringified = incommingBuff.toString();
