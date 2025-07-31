@@ -15,7 +15,7 @@ function addListeners(socket){
 
         console.log(mess.data);
 
-        self.postMessage(mess);
+        self.postMessage(mess.data);
 
         // console.log("length:", mess.data.length);
 
