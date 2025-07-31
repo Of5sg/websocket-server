@@ -89,7 +89,7 @@ const server = net.createServer((socket) => {
 
                         }else{
 
-                            // if upgrade request is for anything other than WebSocket
+                            // if upgrade request is for anything other than WebSocket, Error
                             console.error("Unrecognized upgrade request");
                             console.error(requestObj.upgrade);
                             
@@ -115,7 +115,7 @@ const server = net.createServer((socket) => {
 
                             console.error("Error:\n", error);
 
-                            httpResponse.httpError500;
+                            httpResponse.httpError500(socket);
                             
                         };
 
