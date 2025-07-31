@@ -147,7 +147,7 @@ export function OpcodeSwitch(incommingFrame, socket){
         case 0x8:   // ----- close-frame ----- 
 
             // set statuscode
-            let statusCode = 1000;
+            let statusCode = "1000";
             // construct closing message
             const closingMessage = ConstrFrame(1, 0x8, statusCode);
             // write closing message
