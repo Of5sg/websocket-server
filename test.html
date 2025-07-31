@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="nb-no">
     <head>
+        <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Test page</title>
         <link rel="stylesheet" href="styles.css">
@@ -12,9 +13,11 @@
         </script>
     </head>
     <body>
-        <h2>This is a test page for the server.</h2>
-        <form id="inputForm"></form>
-        <article id="result"></article>
+        <header><h2>This is a test page for the server.</h2></header>
+        <menu></menu>
+        <article id="result"><p>test article content</p></article>
+        <form id="inputForm"><input name="chatinput" id="chatin" type="text" placeholder="chat here..."></form>
+        <h3 id="footer"> This is a test page</h3>
         <script>
             
             const worker = new Worker("webworker.js");

@@ -27,6 +27,7 @@ export function httpResponse200(socket, page, mimetype){
         "HTTP/1.1 200",
         `Content-Type: ${mimetype}`,
         `Content-Length: ${pageBuffer.byteLength}`,
+        "Cache-control: no-cache",
         "\r\n"
         ].join("\r\n");
 
@@ -64,6 +65,7 @@ export function httpError404(socket){
         "HTTP/1.1 404",
         "Content-Type: text/html",
         `Content-Length: ${errorPageBuffer.byteLength}`,
+        "Cache-control: no-cache",
         "\r\n"
         ].join("\r\n");
 
@@ -101,6 +103,7 @@ export function httpError501(socket){
         "HTTP/1.1 501",
         "Content-Type: text/html",
         `Content-Length: ${errorPageBuffer.byteLength}`,
+        "Cache-control: no-cache",
         "\r\n"
         ].join("\r\n");
 
@@ -141,6 +144,7 @@ export function httpError500(socket){
         "HTTP/1.1 500",
         "Content-Type: text/html",
         `Content-Length: ${errorPageBuffer.byteLength}`,
+        "Cache-control: no-cache",
         "\r\n"
         ].join("\r\n");
 
