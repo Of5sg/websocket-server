@@ -6,6 +6,7 @@ import { FrameHandling } from "./server_components/WebSocket_components/websocke
 import { RandomString, splitLines } from "./server_components/utils.js";
 import { SocketInit } from "./server_components/general_server_components.js";
 import * as httpResponse from "./server_components/HTTP_components/http_responses.js";
+import { HTTP_negotiation } from "./server_components/HTTP_components/HTTP_handler.js";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
@@ -47,6 +48,8 @@ const server = net.createServer((socket) => {
               const homePage = readFileSync("./test.html", {
                 encoding: "utf8",
               });
+
+              HTTP_negotiation(requestObj); ////// THIS IS WHERE I AM WORKING NOW
 
               // sending http response, 200 OK
               httpResponse.httpResponse200(socket, homePage, "text/html");
@@ -115,15 +118,17 @@ const server = net.createServer((socket) => {
         case "/socketconnection":
           // for upgrading to websocket connection
 
+          const connection = requestObj.connection.split(", ");
+
           if (
-            requestObj.connection === "Upgrade" ||
-            requestObj.connection === "upgrade"
+            connection.includes("Upgrade") ||
+            connection.includes("upgrade")
           ) {
             // if request is for upgrade
-
+            console.log("her");
             if (requestObj.upgrade === "websocket") {
               // if upgrade request is for websocket
-
+              console.log("Inside websocket");
               // http-handshake
               const response = Opening_Handshake(requestObj);
               socket.write(response.res);
@@ -170,8 +175,5 @@ const server = net.createServer((socket) => {
 });
 
 server.listen(8000, () => {
-
-    console.log("server started on port 8000\n");
-
+  console.log("server started on port 8000\n");
 });
-
