@@ -37,7 +37,7 @@ const server = net.createServer((socket) => {
 
       const requestObj = splitLines(data);
 
-      console.log(requestObj);
+      // console.log(requestObj); // for logging the HTTP-Request
 
       switch (requestObj.path) {
         case "/":
@@ -48,8 +48,6 @@ const server = net.createServer((socket) => {
               const homePage = readFileSync("./test.html", {
                 encoding: "utf8",
               });
-
-              HTTP_negotiation(requestObj); ////// THIS IS WHERE I AM WORKING NOW
 
               // sending http response, 200 OK
               httpResponse.httpResponse200(socket, homePage, "text/html");
@@ -125,10 +123,9 @@ const server = net.createServer((socket) => {
             connection.includes("upgrade")
           ) {
             // if request is for upgrade
-            console.log("her");
             if (requestObj.upgrade === "websocket") {
               // if upgrade request is for websocket
-              console.log("Inside websocket");
+
               // http-handshake
               const response = Opening_Handshake(requestObj);
               socket.write(response.res);
@@ -158,9 +155,9 @@ const server = net.createServer((socket) => {
   });
 
   socket.once("end", () => {
-    console.log(
-      `-----\n\nrecieved closing handshake from:\n\n\tremoteAddress\t${socket.remoteAddress}\n\non:\n\n\tlocalPort\t${socket.localPort}\n\tlocalAddress\t${socket.localAddress}\n\n-----`,
-    );
+    // console.log(
+    //   `-----\n\nrecieved closing handshake from:\n\n\tremoteAddress\t${socket.remoteAddress}\n\non:\n\n\tlocalPort\t${socket.localPort}\n\tlocalAddress\t${socket.localAddress}\n\n-----`,
+    // );
   });
 
   socket.on("timeout", () => {
@@ -170,7 +167,7 @@ const server = net.createServer((socket) => {
   });
 
   socket.on("close", () => {
-    console.log("Connection closed.\n");
+    // console.log("Connection closed.\n");
   });
 });
 
