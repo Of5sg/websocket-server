@@ -23,7 +23,7 @@ function addListeners(socket) {
 
     socket.send("Nå funker det, her er første melding. <----- her :)");
 
-    self.postMessage({user: "Steve", DateTime: "14.09.44", message: "her er en melding om ting og tang"})
+    self.postMessage({user: "Bob", DateTime: "14.09.44", message: "her er en melding om ting og tang"})
     self.postMessage({user: "Henrik", DateTime: "14.09.44", message: "her er en melding om ting og tang"});
     self.postMessage({user: "Lars", DateTime: "15.09.44", message: "her er en melding som svarer på den forrige meldingen"});
 
