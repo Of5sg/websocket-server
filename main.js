@@ -29,8 +29,9 @@ const server = net.createServer((socket) => {
 
     if (socket.state.websocket_connection === true) {
       // if websocket-connection
-
+      
       FrameHandling(data, socket);
+
     } else {
       // if not websocket-connection
 

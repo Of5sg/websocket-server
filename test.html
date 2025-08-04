@@ -21,9 +21,7 @@
         <script>
             
             const worker = new Worker("webworker.js");
-            
-            worker.postMessage(`base_Url#aB29sal2108vnjksdhgmkjfhuiu-:-${document.getElementById("baseUrl").getAttribute("href")}`);
-            
+
             worker.onmessage = function (event) {
 
                 const messageDiv = document.createElement("div");
@@ -41,6 +39,8 @@
                 messageContent.textContent = event.data.message;
 
                 document.getElementById("result").appendChild(messageDiv);
+
+
 
             };
             
