@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nb-no">
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Test page</title>
-        <link rel="stylesheet" href="styles.css">
-        <link rel="icon" href="favicon.png">
-        <base id="baseUrl">
+        <link rel="stylesheet" href="styles.css" />
+        <link rel="icon" href="favicon.png" />
+        <base id="baseUrl" />
         <script>
             const base = document.getElementById("baseUrl");
             base.setAttribute("href", window.location.origin);
@@ -14,24 +14,30 @@
     </head>
     <body>
         <header><h2>This is a test page for the server.</h2></header>
-        <menu></menu>
-        <article id="result"></article>
-        <form id="inputForm"><input name="chatinput" id="chatin" type="text" placeholder="chat here..."></form>
-        <button onclick="Send()" id="sendbutton">send</button>
-        <h3 id="footer"> This is a test page</h3>
+        <menu class="innerElement"></menu>
+        <article id="result" class="innerElement"></article>
+        <form id="inputForm">
+            <input
+                name="chatinput"
+                id="chatinp"
+                type="text"
+                placeholder="chat here..."
+                class="innerElement"
+            />
+            <button onclick="Send(event)" id="sendbutton">send</button>
+        </form>
+        <h3 id="footer">This is a test page</h3>
         <script>
-            
             const worker = new Worker("webworker.js");
 
             worker.onmessage = function (event) {
-
                 const messageDiv = document.createElement("div");
                 const messageUserTime = document.createElement("p");
                 const messageContent = document.createElement("p");
 
                 messageDiv.setAttribute("class", "chatMessageBlocks");
                 messageUserTime.setAttribute("class", "username");
-                messageContent.setAttribute("class", "messages")
+                messageContent.setAttribute("class", "messages");
 
                 messageDiv.appendChild(messageUserTime);
                 messageDiv.appendChild(messageContent);
@@ -42,12 +48,14 @@
                 document.getElementById("result").appendChild(messageDiv);
             };
 
-            function Send(){
-                const inputArea = document.getElementById("chatin");
-                worker.postMessage(inputArea.value);
-                inputArea.value = "";
-            };
-            
+            function Send(event) {
+                event.preventDefault();
+                const inputArea = document.getElementById("chatinp");
+                if (inputArea.value !== "") {
+                    worker.postMessage(inputArea.value);
+                    inputArea.value = "";
+                }
+            }
         </script>
     </body>
 </html>

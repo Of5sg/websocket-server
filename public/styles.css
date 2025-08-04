@@ -1,44 +1,90 @@
-  body {
+@property --backgroundColor {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: lightgrey;
+}
+@property --buttonColor {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: aquamarine;
+}
+@property --fieldColor {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: ivory;
+}
+@property --cornerCurve {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 7px;
+}
+
+body {
+    background-color: var(--backgroundColor);
     margin: 10px;
     display: grid;
     width: 95%;
     height: 1000px;
-    grid-template-areas: 
-    "header header"
-    "nav main"
-    "nav form"
-    "footer footer";
-    grid-template-rows: 75px 8fr 1fr 75px;
+    grid-template-areas:
+        "header header"
+        "nav main"
+        "nav form"
+        "footer footer";
+    grid-template-rows: 75px 8fr 1fr 50px;
     grid-template-columns: 1fr 3fr;
     gap: 10px;
-  }
+}
 
-  header{
+header {
     grid-area: header;
     justify-self: center;
-  }
+}
 
-  menu{
-    grid-column-start: nav;
-  }
+header, #footer {
+    font-family: "Courier New", Courier, monospace;
+}
 
-  #result {
+menu {
+    margin: 0px;
+    grid-area: nav;
+}
+
+button {
+    background-color: var(--buttonColor);
+    border-radius: var(--cornerCurve);
+}
+
+/*this is the article section*/
+
+#result {
     grid-area: main;
-    /* display: grid;
-    grid-template-columns: 1fr 3fr;
-    grid-area: "username message"; */
-  }
+    text-indent: 15px;
+}
 
-  #inputForm{
+/*this is the chat input and button*/
+
+#inputForm {
     grid-area: form;
-  }
+    display: flex;
+    flex-direction: column;
+}
 
-  #chatin{
-    width: 100%;
+#chatinp {
+    width: 1fr;
     height: 50px;
-  }
+    margin-bottom: 5px;
+}
 
-  #footer{
+/*this is the general settings for the inner elements of the body*/
+
+.innerElement {
+    border-radius: var(--cornerCurve);
+    background-color: var(--fieldColor);
+}
+
+/*this is the footer*/
+
+#footer {
     grid-area: footer;
     justify-self: center;
-  }
+}
