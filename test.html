@@ -17,6 +17,7 @@
         <menu></menu>
         <article id="result"></article>
         <form id="inputForm"><input name="chatinput" id="chatin" type="text" placeholder="chat here..."></form>
+        <button onclick="Send()" id="sendbutton">send</button>
         <h3 id="footer"> This is a test page</h3>
         <script>
             
@@ -39,9 +40,12 @@
                 messageContent.textContent = event.data.message;
 
                 document.getElementById("result").appendChild(messageDiv);
+            };
 
-
-
+            function Send(){
+                const inputArea = document.getElementById("chatin");
+                worker.postMessage(inputArea.value);
+                inputArea.value = "";
             };
             
         </script>
