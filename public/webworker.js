@@ -12,8 +12,6 @@ function addListeners(socket) {
 
     self.postMessage(mess.data);
 
-    // console.log("length:", mess.data.length);
-
     // client-Echo
     // setTimeout(() => {
     //     socket.send(mess.data);
@@ -24,19 +22,23 @@ function addListeners(socket) {
     console.log("websocket connection opened");
 
     socket.send("Nå funker det, her er første melding. <----- her :)");
+
+    self.postMessage({user: "Steve", DateTime: "14.09.44", message: "her er en melding om ting og tang"})
+    self.postMessage({user: "Henrik", DateTime: "14.09.44", message: "her er en melding om ting og tang"});
+    self.postMessage({user: "Lars", DateTime: "15.09.44", message: "her er en melding som svarer på den forrige meldingen"});
+
   });
 }
 
-try {
-  let origin = "localhost:8000/";
+let origin = "localhost:8000/";
 
-  let socket;
+const socket = new WebSocket(`ws://${origin}socketconnection`);
 
-  self.onmessage = (message) => {
-    socket = new WebSocket(`ws://${origin}socketconnection`);
+addListeners(socket);
 
-    addListeners(socket);
-  };
-} catch (error) {
-  console.log(error);
-}
+self.onmessage = (message) => {
+
+  socket.send(message.data);
+
+};
+

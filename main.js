@@ -6,7 +6,6 @@ import { FrameHandling } from "./server_components/WebSocket_components/websocke
 import { RandomString, splitLines } from "./server_components/utils.js";
 import { SocketInit } from "./server_components/general_server_components.js";
 import * as httpResponse from "./server_components/HTTP_components/http_responses.js";
-import { HTTP_negotiation } from "./server_components/HTTP_components/HTTP_handler.js";
 
 //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
@@ -37,7 +36,7 @@ const server = net.createServer((socket) => {
 
       const requestObj = splitLines(data);
 
-      // console.log(requestObj); // for logging the HTTP-Request
+      console.log(requestObj); // for logging the HTTP-Request
 
       switch (requestObj.path) {
         case "/":
@@ -50,7 +49,8 @@ const server = net.createServer((socket) => {
               });
 
               // sending http response, 200 OK
-              httpResponse.httpResponse200(socket, homePage, "text/html");
+              httpResponse.httpResponse200(socket, homePage, "text/html", requestObj);
+            
             } catch (error) {
               console.error("Problem sending Homepage");
               console.error(error);
@@ -69,7 +69,8 @@ const server = net.createServer((socket) => {
                 encoding: "utf8",
               });
 
-              httpResponse.httpResponse200(socket, stylesheet, "text/css");
+              httpResponse.httpResponse200(socket, stylesheet, "text/css", requestObj);
+            
             } catch (error) {
               console.error("Error:\n", error);
 
@@ -90,7 +91,9 @@ const server = net.createServer((socket) => {
                 socket,
                 script,
                 "application/javascript",
+                requestObj
               );
+            
             } catch (error) {
               console.error("Error:\n", error);
 
@@ -104,7 +107,7 @@ const server = net.createServer((socket) => {
           if (requestObj.method === "GET") {
             try {
               const icon = readFileSync("./public/favicon.png");
-              httpResponse.httpResponse200(socket, icon, "image/x-icon");
+              httpResponse.httpResponse200(socket, icon, "image/x-icon", requestObj);
             } catch (error) {
               console.error("Error sending favicon:\n", error);
               httpResponse.httpError500(socket);
@@ -115,13 +118,11 @@ const server = net.createServer((socket) => {
 
         case "/socketconnection":
           // for upgrading to websocket connection
+          let connection = requestObj.connection;
+          connection = connection.toLowerCase().split(", ");
 
-          const connection = requestObj.connection.split(", ");
+          if (connection.includes("upgrade")) {
 
-          if (
-            connection.includes("Upgrade") ||
-            connection.includes("upgrade")
-          ) {
             // if request is for upgrade
             if (requestObj.upgrade === "websocket") {
               // if upgrade request is for websocket
@@ -132,6 +133,16 @@ const server = net.createServer((socket) => {
 
               // setting websock to true, indicating websocket-connection
               socket.state.websocket_connection = true;
+
+              // // checking for permessage-deflate support
+              // const websocket_extensions = requestObj.sec_websocket_extensions;
+
+              // if(websocket_extensions.split(", ").contains("permessage-deflate")){
+              //   socket.state.websocket_permessage_deflate = true;
+              // }else{
+              //   socket.state.websocket_permessage_deflate = false;
+              // };
+              
             } else {
               // if upgrade request is for anything other than WebSocket, Error
               console.error("Unrecognized upgrade request");
@@ -155,9 +166,9 @@ const server = net.createServer((socket) => {
   });
 
   socket.once("end", () => {
-    // console.log(
-    //   `-----\n\nrecieved closing handshake from:\n\n\tremoteAddress\t${socket.remoteAddress}\n\non:\n\n\tlocalPort\t${socket.localPort}\n\tlocalAddress\t${socket.localAddress}\n\n-----`,
-    // );
+    console.log(
+      `-----\n\nrecieved closing handshake from:\n\n\tremoteAddress\t${socket.remoteAddress}\n\non:\n\n\tlocalPort\t${socket.localPort}\n\tlocalAddress\t${socket.localAddress}\n\n-----`,
+    );
   });
 
   socket.on("timeout", () => {
@@ -167,7 +178,7 @@ const server = net.createServer((socket) => {
   });
 
   socket.on("close", () => {
-    // console.log("Connection closed.\n");
+    console.log("Connection closed.\n");
   });
 });
 

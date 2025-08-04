@@ -1,7 +1,8 @@
-
+import { deflate, gzip } from "zlib";
+import { promisify } from "util";
 /**
 
-function httpResponse200( socket, page, mimetype )
+function httpResponse200( socket, page, mimetype, requestObj )
 
     Socket: (Object)
         - the socket-object returned by net.createServer()
@@ -11,31 +12,79 @@ function httpResponse200( socket, page, mimetype )
     
     Mimetype: (String)
         - the pages mime type
+    
+    requestObj: (Object)
+        - the object containing the http request from the client
 
 -------------------------------------------------
 Description:
 
     Sends response: 200 OK, and the requested page
  */
-export function httpResponse200(socket, page, mimetype){
+export async function httpResponse200(socket, page, mimetype, requestObj){
     // 200 OK
 
-    const pageBuffer = Buffer.from(page);
+    //turn page into buffer
+    let pageBuffer = Buffer.from(page);
 
     // creating response headers, 200 OK
     const responseHeaders = [
         "HTTP/1.1 200",
         `Content-Type: ${mimetype}`,
-        `Content-Length: ${pageBuffer.byteLength}`,
         "Cache-control: no-cache",
-        "\r\n"
-        ].join("\r\n");
+        ];
 
-    const responseBuffer = Buffer.from(responseHeaders);
+    const encoding_requests = requestObj.accept_encoding.split(", ");
+    // deflating if requested
+    if(encoding_requests.includes("deflate")){
 
+        // make zlib.deflate, a promise
+        const Deflate = promisify(deflate);
+
+        // deflate the payload/page
+        await Deflate(pageBuffer)
+            .then((data) => {
+                // assign deflated page to pageBuffer
+                pageBuffer = data;
+            })
+            .catch((err) => {
+                console.log(err)
+            });
+
+        responseHeaders.push("Content-Encoding: deflate");
+    
+    }else if(encoding_requests.includes("gzip")){
+
+        // make zlib.deflate, a promise
+        const Gzip = promisify(gzip);
+
+        // deflate the payload/page
+        await Gzip(pageBuffer)
+            .then((data) => {
+                // assign deflated page to pageBuffer
+                pageBuffer = data;
+            })
+            .catch((err) => {
+                console.log(err)
+            });
+
+        responseHeaders.push("Content-Encoding: gzip");
+    
+    };
+
+    // setting content length after possibly deflating
+    responseHeaders.push(`Content-Length: ${pageBuffer.byteLength}`);
+
+    responseHeaders.push("\r\n");
+
+    const headers = responseHeaders.join("\r\n");
+
+    const responseBuffer = Buffer.from(headers);
+
+    // concat full response
     const response = Buffer.concat([responseBuffer, pageBuffer]);
 
-    // sending response
+    // send response
     socket.end(response);
 
 };
@@ -75,7 +124,7 @@ export function httpError404(socket){
     const errorResponse = Buffer.concat([errorHeaderBuffer, errorPageBuffer]);
 
     socket.end(errorResponse);
-}
+};
 
 
 
