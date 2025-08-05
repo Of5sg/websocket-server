@@ -31,8 +31,8 @@ export function HTTPRouting(data, socket) {
 
           // sending http error, 500 internal server error
           httpResponse.httpError500(socket);
-        }
-      }
+        };
+      };
 
       break;
 
@@ -53,8 +53,8 @@ export function HTTPRouting(data, socket) {
           console.error("Error:\n", error);
 
           httpResponse.httpError500(socket);
-        }
-      }
+        };
+      };
 
       break;
 
@@ -75,8 +75,8 @@ export function HTTPRouting(data, socket) {
           console.error("Error:\n", error);
 
           httpResponse.httpError500(socket);
-        }
-      }
+        };
+      };
 
       break;
 
@@ -93,8 +93,8 @@ export function HTTPRouting(data, socket) {
         } catch (error) {
           console.error("Error sending favicon:\n", error);
           httpResponse.httpError500(socket);
-        }
-      }
+        };
+      };
 
       break;
 
@@ -105,41 +105,39 @@ export function HTTPRouting(data, socket) {
 
       if (connection.includes("upgrade")) {
         // if request is for upgrade
+
         if (requestObj.upgrade === "websocket") {
           // if upgrade request is for websocket
 
           // http-handshake
-          const response = Opening_Handshake(requestObj);
+          const response = Opening_Handshake(socket, requestObj);
+
           socket.write(response.res);
 
           // setting websock to true, indicating websocket-connection
           socket.state.websocket_connection = true;
 
-          // // checking for permessage-deflate support
-          // const websocket_extensions = requestObj.sec_websocket_extensions;
-
-          // if(websocket_extensions.split(", ").contains("permessage-deflate")){
-          //   socket.state.websocket_permessage_deflate = true;
-          // }else{
-          //   socket.state.websocket_permessage_deflate = false;
-          // };
         } else {
           // if upgrade request is for anything other than WebSocket, Error
+
           console.error("Unrecognized upgrade request");
+
           console.error(requestObj.upgrade);
 
           httpResponse.httpError501(socket);
-        }
-      }
+
+        };
+      };
 
       break;
 
     default:
+
       console.error("Unknown path:", requestObj.path);
 
       // send response 404 not found
       httpResponse.httpError404(socket);
 
       break;
-  }
-}
+  };
+};

@@ -10,7 +10,7 @@ function addListeners(socket) {
   socket.addEventListener("message", (mess) => {
     console.log(mess.data);
 
-    self.postMessage(mess.data);
+    self.postMessage(JSON.parse(mess.data));
 
     // client-Echo
     // setTimeout(() => {
@@ -22,10 +22,6 @@ function addListeners(socket) {
     console.log("websocket connection opened");
 
     socket.send("Nå funker det, her er første melding. <----- her :)");
-
-    self.postMessage({user: "Bob", DateTime: "14.09.44", message: "her er en melding om ting og tang"})
-    self.postMessage({user: "Henrik", DateTime: "14.09.44", message: "her er en annen melding om ting og tang"});
-    self.postMessage({user: "Lars", DateTime: "15.09.44", message: "her er en melding som svarer på den forrige meldingen"});
 
   });
 }

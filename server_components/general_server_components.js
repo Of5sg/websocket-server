@@ -30,4 +30,9 @@ export function SocketInit(socket){
     socket.dataStore.initialFrameBuffer = {};
     socket.dataStore.tempFINPayloadBuffer = Buffer.alloc(0);
 
+    // initializing RSV values to zero
+    socket.state.RSV1 = 0;
+    socket.state.RSV2 = 0;
+    socket.state.RSV3 = 0;
+
 };

@@ -3,7 +3,7 @@ import { Buffer } from "buffer";
 /**
 ```
 
-function ConstrFrame( FIN, opcode, payload )
+function ConstrFrame( FIN, opcode, payload, socket )
 
     FIN: (int) 
         1 - final message, no continuation frames after, 
@@ -21,10 +21,8 @@ function ConstrFrame( FIN, opcode, payload )
 
     payload: (string | binary).
 
-    options: (should all be 0, unless extension negotiated with client)
-        RSV1: (0 | 1),
-        RSV2: (0 | 1),
-        RSV3: (0 | 1)
+    socket: (Object)
+        - the socket object returned by net.createServer
 
 
 Returns: (Buffer)
@@ -38,15 +36,15 @@ Description:
 this function constructs the response-Frame.
 */
 
-export function ConstrFrame(FIN, opcode, payload, options = {}){
+export function ConstrFrame(FIN, opcode, payload, socket){
 
     // For RSV1 and extensions: https://datatracker.ietf.org/doc/html/rfc7692
 
-    const {
-        RSV1 = 0,
-        RSV2 = 0,
-        RSV3 = 0
-    } = options
+    const options = {
+        RSV1: socket.state.RSV1,
+        RSV2: socket.state.RSV2,
+        RSV3: socket.state.RSV3
+    };
 
     // Building response from here
 

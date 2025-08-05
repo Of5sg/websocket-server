@@ -43,8 +43,7 @@ export function splitLines(incommingBuff) {
 }
 
 export function RandomString(len) {
-  const symbols =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+  const symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
   let result = "";
 
