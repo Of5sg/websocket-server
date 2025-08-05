@@ -22,9 +22,9 @@ function ConstrFrame( FIN, opcode, payload )
     payload: (string | binary).
 
     options: (should all be 0, unless extension negotiated with client)
-        RSV1 = (0 | 1),
-        RSV2 = (0 | 1),
-        RSV3 = (0 | 1)
+        RSV1: (0 | 1),
+        RSV2: (0 | 1),
+        RSV3: (0 | 1)
 
 
 Returns: (Buffer)
