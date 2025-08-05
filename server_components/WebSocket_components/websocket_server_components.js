@@ -1,6 +1,8 @@
 import { Buffer } from "buffer";
 import { ConstrFrame } from "./frame_constructor.js";
 import { DeconstFrame } from "./frame_interpreter.js";
+import { inflateRaw } from "zlib";
+import { promisify } from "util";
 
 // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
 
@@ -28,14 +30,14 @@ export function FrameProcessing(completedFrame){
             // text-frame
             completedFrame.payload = completedFrame.payload.toString("utf8");
 
-            console.log("\n\tPayload:\n");
-            console.log(completedFrame.payload);
+            console.log("\n\tPayload - text-frame:\n");
+            console.log(JSON.parse(completedFrame.payload));
             console.log("\n-------------------------------------------------------\n");
             break;
         case 0x2:
             // binary-frame
-            console.log("\n\tPayload:\n");
-            console.log(completedFrame.payload);
+            console.log("\n\tPayload - binary-frame:\n");
+            console.log(JSON.parse(completedFrame.payload));
             console.log("\n-------------------------------------------------------\n");
             break;
         default:
@@ -148,10 +150,15 @@ export function OpcodeSwitch(incommingFrame, socket){
 
             // set statuscode
             let statusCode = "1000";
-            // construct closing message
-            const closingMessage = ConstrFrame(1, 0x8, statusCode);
-            // write closing message
-            socket.write(closingMessage);
+            try{
+                // construct closing message
+                const closingMessage = ConstrFrame(1, 0x8, statusCode);
+                // write closing message
+                socket.write(closingMessage);
+            }catch (error){
+                console.error(error);
+                console.error("socket Object destroyed before close frame could be sent");
+            };
             // destroy socket
             socket.destroy()
 
@@ -293,7 +300,7 @@ function FrameHandling( data, socket )
  */
 
 
-export function FrameHandling(data, socket){
+export async function FrameHandling(data, socket){
 
     // push data to buffer
     socket.dataStore.streamBuffer = Buffer.concat([socket.dataStore.streamBuffer, data]);
@@ -320,6 +327,7 @@ export function FrameHandling(data, socket){
 
         // Convert to object
         const websocketFrame = DeconstFrame(frameBuffer);
+
 
         // Run opcode switch
         OpcodeSwitch(websocketFrame, socket);

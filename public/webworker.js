@@ -21,7 +21,7 @@ function addListeners(socket) {
   socket.addEventListener("open", () => {
     console.log("websocket connection opened");
 
-    socket.send("Nå funker det, her er første melding. <----- her :)");
+    // socket.send("Nå funker det, her er første melding. <----- her :)");
 
   });
 }
@@ -34,7 +34,9 @@ addListeners(socket);
 
 self.onmessage = (message) => {
 
-  socket.send(message.data);
+  console.log(message.data)
+
+  socket.send(JSON.stringify(message.data));
 
 };
 

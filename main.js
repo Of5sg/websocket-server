@@ -28,7 +28,7 @@ const server = net.createServer((socket) => {
       socket.write(exampleMessage);
       counter++
     };
-  }, 1000)
+  }, 100)
 
   // data event
   socket.on("data", (data) => {

@@ -48,11 +48,15 @@
                 document.getElementById("result").appendChild(messageDiv);
             };
 
+            const user = "Lars";
+            const date = "19.05.58"
+
             function Send(event) {
                 event.preventDefault();
                 const inputArea = document.getElementById("chatinp");
                 if (inputArea.value !== "") {
-                    worker.postMessage(inputArea.value);
+                    const chatMessage = {user: user, DateTime: date, message: inputArea.value};
+                    worker.postMessage(chatMessage);
                     inputArea.value = "";
                 }
             }
