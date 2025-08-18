@@ -92,43 +92,6 @@ Primitive/Constructed:{
     - Primitive:        0
     - Constructed:      1
 }
-Tag number:{
-    5 bit number
-    or
-    For tags with a number greater than or equal to 31, the identifier shall comprise a leading octet followed by
-    one or more subsequent octets.
-    8.1.2.4.1 The leading octet shall be encoded as follows:
-        a) bits 8 and 7 shall be encoded to represent the class of the tag as listed in Table 1;
-        b) bit 6 shall be a zero or a one according to the rules of 8.1.2.5;
-        c) bits 5 to 1 shall be encoded as 111112 .
-    8.1.2.4.2 The subsequent octets shall encode the number of the tag as follows:
-        a) bit 8 of each octet shall be set to one unless it is the last octet of the identifier octet
-    b) bits 7 to 1 of the first subsequent octet, followed by bits 7 to 1 of the second subsequent octet, followed in
-    turn by bits 7 to 1 of each further octet, up to and including the last subsequent octet in the identifier
-    octets shall be the encoding of an unsigned binary integer equal to the tag number, with bit 7 of the first
-    subsequent octet as the most significant bit;
-    c) bits 7 to 1 of the first subsequent octet shall not all be zero.
-}
-LENGTH OCTET:
-Definite and Indefinite
-A sender shall:
-a) use the definite form (see 8.1.3.3) if the encoding is primitive;
-b) use either the definite form (see 8.1.3.3) or the indefinite form (see 8.1.3.6), a sender's option, if the
-encoding is constructed and all immediately available;
-c) use the indefinite form (see 8.1.3.6) if the encoding is constructed and is not all immediately available
-
-
-
-
-
-IDENTIFIER OCTET(bits){
-class: 8, 7                 (2 bits)
-primitive/constructed: 6    (1 bit)
-Tag number: 5, 4, 3, 2, 1   (5 bits)
-}
-LENGTH OCTET(bits){
-
-}
  */
     // object to contain resulting parameters
     const der_object = {};
@@ -322,7 +285,7 @@ LENGTH OCTET(bits){
             }
             break;
         case "SEQUENCE, SEQUENCE OF":
-            const resultSequence = [];
+            const resultSequence = []; 
 
             // i skips from entry to entry, per iteration, current position tracks the position inside each entry section
             for (let i = 0, currentPosition = 0; i < der_object.content.length; i = currentPosition){
