@@ -2,9 +2,16 @@ import { readFileSync } from "fs";
 import { Opening_Handshake } from "./handshakes.js";
 import * as httpResponse from "./http_responses.js";
 import { splitLines } from "../utils.js";
+import { TLSRedirect } from "../TLS/TLS.js";
 
 export function HTTPRouting(data, socket) {
   const requestObj = splitLines(data);
+
+  // if (requestObj.upgrade_insecure_requests === "1"){
+  //   // send 307 temporary redirect
+  //   TLSRedirect(requestObj, socket);
+  //   return;
+  // };
 
   console.log(requestObj); // for logging the HTTP-Request
 
@@ -32,7 +39,7 @@ export function HTTPRouting(data, socket) {
           // sending http error, 500 internal server error
           httpResponse.httpError500(socket);
         };
-      };
+      }
 
       break;
 

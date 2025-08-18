@@ -1,7 +1,7 @@
 import { Buffer } from "buffer";
 import { ConstrFrame } from "./frame_constructor.js";
 import { DeconstFrame } from "./frame_interpreter.js";
-import { inflateRaw } from "zlib";
+import { inflateRaw, createInflateRaw } from "zlib";
 import { promisify } from "util";
 
 // https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
@@ -31,13 +31,27 @@ export function FrameProcessing(completedFrame){
             completedFrame.payload = completedFrame.payload.toString("utf8");
 
             console.log("\n\tPayload - text-frame:\n");
-            console.log(JSON.parse(completedFrame.payload));
+
+            try{
+                completedFrame.payload = JSON.parse(completedFrame.payload);
+            }catch(err){
+                console.error(err);
+            }
+
+            console.log(completedFrame.payload);
             console.log("\n-------------------------------------------------------\n");
             break;
         case 0x2:
             // binary-frame
             console.log("\n\tPayload - binary-frame:\n");
-            console.log(JSON.parse(completedFrame.payload));
+
+            try{
+                completedFrame.payload = JSON.parse(completedFrame.payload);
+            }catch(err){
+                console.error(err);
+            }
+
+            console.log(completedFrame.payload);
             console.log("\n-------------------------------------------------------\n");
             break;
         default:
@@ -180,7 +194,7 @@ export function OpcodeSwitch(incommingFrame, socket){
             // here i recieve a pong frame, for a ping i have sent
 
             if(incommingFrame.payload.toString() === socket.timing.pingMessage){
-                console.log("Pong payload returned successfully");
+                console.log("Pong: payload returned successfully");
             }else{
                 console.warn("WARNING: PONG PAYLOAD MISMATCH");
                 console.log("\tPing message:", socket.timing.pingMessage);
@@ -340,4 +354,5 @@ export async function FrameHandling(data, socket){
     };
 
 };
+
 

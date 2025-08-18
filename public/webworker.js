@@ -1,16 +1,18 @@
 function addListeners(socket) {
+
   socket.addEventListener("close", (mess) => {
-    console.log("Close:\n", mess);
+    console.log("Close:\n", "Clean close?:", mess.wasClean);
+    console.log("Code:", mess.code);
+    console.log("Reason:", mess.reason);
   });
 
   socket.addEventListener("error", (error) => {
-    console.log("Error:\n", error);
+    console.error("Error:\n", "Target:\n", error.target);
   });
 
   socket.addEventListener("message", (mess) => {
-    console.log(mess.data);
-
-    self.postMessage(JSON.parse(mess.data));
+    
+    self.postMessage(mess.data);
 
     // client-Echo
     // setTimeout(() => {
@@ -21,7 +23,7 @@ function addListeners(socket) {
   socket.addEventListener("open", () => {
     console.log("websocket connection opened");
 
-    // socket.send("Nå funker det, her er første melding. <----- her :)");
+    socket.send("Nå funker det, her er første melding. <----- her :)");
 
   });
 }

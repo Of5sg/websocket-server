@@ -35,4 +35,6 @@ export function SocketInit(socket){
     socket.state.RSV2 = 0;
     socket.state.RSV3 = 0;
 
+    socket.state.HTTP_TLS_connection = false;
+
 };

@@ -31,6 +31,10 @@
             const worker = new Worker("webworker.js");
 
             worker.onmessage = function (event) {
+
+                const incommingMessage = JSON.parse(event.data);
+                console.log(incommingMessage)
+
                 const messageDiv = document.createElement("div");
                 const messageUserTime = document.createElement("p");
                 const messageContent = document.createElement("p");
@@ -41,15 +45,15 @@
 
                 messageDiv.appendChild(messageUserTime);
                 messageDiv.appendChild(messageContent);
-                messageUserTime.textContent = event.data.user;
-                messageUserTime.textContent += "\t" + event.data.DateTime;
-                messageContent.textContent = event.data.message;
+                messageUserTime.textContent = incommingMessage.user;
+                messageUserTime.textContent += "\t" + incommingMessage.DateTime;
+                messageContent.textContent = incommingMessage.message;
 
                 document.getElementById("result").appendChild(messageDiv);
             };
 
-            const user = "Lars";
-            const date = "19.05.58"
+            const user = "Undefined";
+            const date = "Undefined"
 
             function Send(event) {
                 event.preventDefault();
