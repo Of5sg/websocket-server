@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { DERDecoder } from "../DER_enc_dec/DER_decoder.js";
 
 export function Extract16bitUint(data, startIndex){
-    return ((data[startIndex] << 8) | data[startIndex + 1]);
+    return ((BigInt(data[startIndex]) << 8n) | BigInt(data[startIndex + 1]));
 }
 
 export function extractListField2Byte(data, position, list_object){
@@ -29,8 +29,8 @@ export function TLS_Extension_Reader(extensions, extensions_total_length){
 
     for(let i = 0; i < extensions_total_length; i++){
 
-        let extension_type = (extensions[i] << 8) | (extensions[i + 1]);
-        let extension_length = (extensions[i + 2] << 8) | (extensions[i + 3]);
+        let extension_type = (BigInt(extensions[i]) << 8n) | BigInt(extensions[i + 1]);
+        let extension_length = (BigInt(extensions[i + 2]) << 8n) | BigInt(extensions[i + 3]);
 
         i += 4; // update i
 
@@ -47,31 +47,41 @@ export function TLS_Extension_Reader(extensions, extensions_total_length){
 
 
                 separatedExtensions[extension_types[extension_type]] = extensions.slice(i + 5, i + (5 + hostName_length)).toString();
-                                                
+                                             
                 
                 break;
             case "max_fragment_length":
                 // https://datatracker.ietf.org/doc/html/rfc6066#section-4
+                console.log("HER ER MAXIMUM FRAGMENT LENGTH", extensions.slice(i+4, i+(4+Number(extension_length))))
                 break;
             case "client_certificate_url":
                 // https://datatracker.ietf.org/doc/html/rfc6066#section-5
+                console.log("HER ER CLIENT CERTIFICATE URL", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "trusted_ca_keys":
                 // https://datatracker.ietf.org/doc/html/rfc6066#section-6
+                console.log("HER ER TRUSTED CA KEYS", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "truncated_hmac":
                 // https://datatracker.ietf.org/doc/html/rfc6066#section-7
+                console.log("HER ER TRUNCATED HMAC", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "status_request":
                 // https://datatracker.ietf.org/doc/html/rfc6066#section-8
+                console.log("HER ER CERTIFICATE STATUS REQUEST", extensions.slice(i+4, i+[4+Number(extension_length)]))
+                
                 break;
             case "user_mapping":
+                console.log("HER ER USER MAPPING", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "client_authz":
+                console.log("HER ER CLIENT AUTHZ", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "server_authz":
+                console.log("HER ER SERVER AUTHZ", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "cert_type":
+                console.log("HER ER CERT TYPE", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "supported_groups":
                 let supported_groups_result = extractListField2Byte(extensions, i, supported_groups)
@@ -159,11 +169,11 @@ export function TLS_Extension_Reader(extensions, extensions_total_length){
             case "signature_algorithms_cert":
                 break;
             case "key_share":
-                const namedGroup = (extensions[i] << 8) | extensions[i + 1];
+                const namedGroup = (BigInt(extensions[i]) << 8n) | BigInt(extensions[i + 1]);
                 // change position in buffer, without interfering with progression of i
                 let y = i + 2;
-                const key_length = (extensions[y] << 8) | extensions[y + 1];
-                const keyExchange = extensions.slice(y, y + key_length);
+                const key_length = (BigInt(extensions[y]) << 8n) | BigInt(extensions[y + 1]);
+                const keyExchange = extensions.slice(y, y + Number(key_length));
                 console.log(namedGroup.toString(16))
 
                 const key_share = {
@@ -201,14 +211,14 @@ export function TLS_Extension_Reader(extensions, extensions_total_length){
             case "renegotiation_info":
                 break;
             default:
-                separatedExtensions[extension_types[extension_type]] = [extensions.slice(i, i + extension_length)];
+                separatedExtensions[extension_types[extension_type]] = [extensions.slice(i, i + Number(extension_length))];
                 break;
         };
 
         // add extension and extension name to extension object
         // separatedExtensions[extension_types[extension_type]] = [extensions.slice(i, i + extension_length)];
 
-        i += extension_length - 1; // update i
+        i += Number(extension_length) - 1; // update i
 
     };
     return separatedExtensions;
