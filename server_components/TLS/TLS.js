@@ -1,5 +1,6 @@
 import { Buffer } from "node:buffer";
 import { TLS_Extension_Reader } from "./TLS_components.js";
+import { readFileSync } from "node:fs";
 
 // TLS 1.3 https://datatracker.ietf.org/doc/html/rfc8446#section-4
 
@@ -23,6 +24,29 @@ export function TLSRedirect(requestObj, socket){
 
     socket.end(response);
 
+};
+
+function cipherIdent(cipherBuffer){
+
+    // read list of possible cipher suites
+    let cipherAlternatives;
+    try{
+        cipherAlternatives = JSON.parse(readFileSync("./server_components/TLS/cipher_suites.json"));
+    }catch(error){
+        console.error(error);
+    };
+
+    const supportedCiphers = [];
+
+    for (let i = 0; i < cipherBuffer.length; i += 2){
+
+        const keyMajor = ("0x" + cipherBuffer[i].toString(16).toUpperCase().padStart(2, "0"))
+        const keyMinor = ("0x" + cipherBuffer[i + 1].toString(16).toUpperCase().padStart(2, "0"))
+        
+        supportedCiphers.push(cipherAlternatives[keyMajor][keyMinor]);
+    };
+
+    return supportedCiphers;
 };
 
 export function TLSHandshake(data, socket){
@@ -147,6 +171,7 @@ export function TLSHandshake(data, socket){
                     position = 46 + offset; // set current position
                     ciphersuite = data.slice(position, (position + Number(ciphersuite_length)));
                     offset += Number(ciphersuite_length);   // Update offset
+                    ciphersuite = cipherIdent(ciphersuite);
 
                     // get compression methods
                     compressionMethods_length = data[46 + offset];

@@ -47,7 +47,7 @@ export function TLS_Extension_Reader(extensions, extensions_total_length){
 
 
                 separatedExtensions[extension_types[extension_type]] = extensions.slice(i + 5, i + (5 + hostName_length)).toString();
-                                             
+
                 
                 break;
             case "max_fragment_length":
