@@ -105,10 +105,8 @@ export function TLSHandshake(data, socket){
             console.log("CONTENT TYPE: Alert");
             break;
         case 22:    // Handshake
-
-            // https://www.rfc-editor.org/rfc/rfc5246#section-7.4
-
             console.log("\nCONTENT TYPE: Handshake");
+            // https://www.rfc-editor.org/rfc/rfc5246#section-7.4
 
             // track byte offset
             let offset = 0;

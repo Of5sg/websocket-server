@@ -10,8 +10,7 @@ function SequenceTypeSwitcher(type, entryData){
 
     switch(type){
         // BEGINNING OF TYPE FOR LOOP
-        case 0x01:
-            // boolean
+        case 0x01:  // boolean
             console.log("TYPE:", "Boolean type");
             if(entryData[0] === 0x00){
                 resultEntry = false;
@@ -19,8 +18,7 @@ function SequenceTypeSwitcher(type, entryData){
                 resultEntry = true;
             }
             break;
-        case 0x02:
-            // integer
+        case 0x02:  // integer
             console.log("TYPE:", "integer type");
             let temp = 0n;
             // i is incrementer, y is multiplier
@@ -30,40 +28,102 @@ function SequenceTypeSwitcher(type, entryData){
             }
             resultEntry = temp;
             break;
-        case 0x04:
-            // octet string
+        case 0x03: // bit string
+            console.log("TYPE:", "bit string");
+            break;
+        case 0x04:  // octet string
             console.log("TYPE:", "octet type");
             if(entryData[0] === undefined){
                 resultEntry = null;
             }
             break;
-        case 0x0C:
-            // UTF8String
+        case 0x05: // NULL
+            console.log("TYPE:", "NULL");
+            if (entryData.length === 0){
+                resultEntry = null;
+            }else{
+                resultEntry = "error?"
+            }
+            break;
+        case 0x06: // object identifier
+            console.log("TYPE:", "object identifier");
+            break;
+        case 0x09:  // real value
+            console.log("TYPE:", "REAL");
+            break;
+        case 0x0C:  // UTF8String
             console.log("TYPE:", "UTF8String");
             resultEntry = decoder.decode(entryData);
             break;
-        case 0x13:
-            // Printable string
+        case 0x13:  // Printable string
             console.log("TYPE:", "Printable type");
             resultEntry = decoder.decode(entryData);
             break;
-        case 0x16:
-            // IA5String
+        case 0x16:  // IA5String
             console.log("TYPE:", "IA5String");
             resultEntry = decoder.decode(entryData);
             break;
-        case 0x1E:
-            // BMPString
+        case 0x17: // UTC Time
+            console.log("TYPE:", "UTC Time");
+            let tempUTCTime = (decoder.decode(entryData));
+            resultEntry = {
+                year: Number(tempUTCTime.slice(0, 2)), 
+                month: Number(tempUTCTime.slice(2, 4)), 
+                day: Number(tempUTCTime.slice(4, 6)), 
+                hour: Number(tempUTCTime.slice(6, 8)), 
+                minute: Number(tempUTCTime.slice(8, 10)), 
+                second: Number(tempUTCTime.slice(10, 12))
+            };
+            break;
+        case 0x1E:  // BMPString
             console.log("TYPE:", "BMPString");
             const UTF16Decoder = new TextDecoder("utf-16be");
             resultEntry = UTF16Decoder.decode(entryData);
             break;
-        case 0x30:
-            // SEQUENCE
-            console.log("TYPE:", "Sequence type");
+        case 0x18: // generalized time
+            console.log("TYPE:", "GENERALIZED TIME");
+            let tempGeneralizedTime = (decoder.decode(entryData));
+            resultEntry = {
+                year: Number(tempGeneralizedTime.slice(0, 4)), 
+                month: Number(tempGeneralizedTime.slice(4, 6)), 
+                day: Number(tempGeneralizedTime.slice(6, 8)), 
+                hour: Number(tempGeneralizedTime.slice(8, 10)), 
+                minute: Number(tempGeneralizedTime.slice(10, 12)), 
+                second: Number(tempGeneralizedTime.slice(12, 14))
+            };
             break;
-        case 0xA0:
-            // context-specific
+        case 0x30:  // SEQUENCE
+            console.log("TYPE:", "Sequence type");
+            const resultSequence = []; 
+            // i skips from entry to entry, per iteration, current position tracks the position inside each entry section
+            for (let i = 0, currentPosition = 0; i < entryData.length; i = currentPosition){
+                const type = entryData[i];
+                currentPosition++;
+                let contentLength = 0n;
+                if(((entryData[i + 1] & 0b10000000) >> 7) === 0){
+                    // short form
+                    console.log("SHORT FORM");
+                    contentLength = entryData[i+1];
+                    currentPosition++;
+                }else{
+                    // long form
+                    console.log("LONG FORM")
+                    let lengthOfLengthBytes = entryData[i + 1] & 0b01111111;
+                    currentPosition += lengthOfLengthBytes + 1;
+                    // y is incrementer, x is multiplier
+                    for (let y = (i + 2), x = lengthOfLengthBytes; x > 0; y++, x--){
+                        let shifter = (8 * (x - 1));
+                        contentLength = contentLength | (BigInt(entryData[y]) << BigInt(shifter));
+                    };
+                };
+                let seqData;
+                seqData = entryData.slice(currentPosition, currentPosition + Number(contentLength));
+                resultSequence.push(SequenceTypeSwitcher(type, seqData));
+                currentPosition += Number(contentLength);
+            };
+            resultEntry = resultSequence;
+            break;
+        case 0xA0:  // context-specific
             console.log("TYPE:", "context-specific type");
             break;
         default:
@@ -287,11 +347,13 @@ Primitive/Constructed:{
         case "SEQUENCE, SEQUENCE OF":
             const resultSequence = []; 
 
+            console.log(der_object.content)
+
             // i skips from entry to entry, per iteration, current position tracks the position inside each entry section
             for (let i = 0, currentPosition = 0; i < der_object.content.length; i = currentPosition){
 
                 console.log("------------------------------------")
-                console.log(der_object.content);
+                // console.log(der_object.content);
                 // BEGINNING OF SEQUENCE FOR LOOP
 
                 const type = der_object.content[i];
@@ -366,7 +428,7 @@ const test6 = Buffer.from("0101FF", "hex");
 const test7 = Buffer.from("010100", "hex");
 const test8 = Buffer.from("30090101FF02012A0400", "hex");
 
-const test9 = new Uint8Array([
+const test9 = Buffer.from([
 
   0x30, 0x53,
 
@@ -398,8 +460,36 @@ const test9 = new Uint8Array([
   0x5A
 ]);
 
-const test10 = Uint8Array.from([0x02, 0x02, 0x01, 0x2A]);
+const test10 = Buffer.from([0x02, 0x02, 0x01, 0x2A]);
 
+const test11 = Buffer.from([
+  0x30, 0x32,             // SEQUENCE (42 bytes)
+    0x02, 0x01, 0x01,     // INTEGER 1
+    0x0c, 0x06,           // UTF8String (6 bytes)
+      0x4a, 0x6f, 0x68, 0x6e, 0x20, 0x44, // "John D"
+    0x01, 0x01, 0xff,     // BOOLEAN TRUE
+    0x09, 0x03,           // REAL (3 bytes)
+      0x80, 0x00, 0x00,   // 0.0 (encoded as binary float)
+    0x18, 0x0f,           // GeneralizedTime (15 bytes)
+      0x32, 0x30, 0x32, 0x35, 0x30, 0x38, 0x31, 0x39, 
+      0x30, 0x39, 0x35, 0x32, 0x30, 0x30, 0x5a, // "20250819095200Z"
+    0x30, 0x0b,           // SEQUENCE (11 bytes)
+      0x02, 0x01, 0x2a,   // INTEGER 42
+      0x13, 0x06,         // printable (6 bytes)
+        0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x21  // "Hello!"
+]);
+const test12 = Buffer.from([
+  0x30, 0x1f,             // SEQUENCE (31 bytes)
+    0x02, 0x01, 0x05,     // INTEGER 5
+    0x30, 0x1a,           // SEQUENCE (26 bytes)
+      0x0c, 0x05,         // UTF8String (5 bytes)
+        0x41, 0x6c, 0x69, 0x63, 0x65, // "Alice"
+      0x30, 0x11,         // SEQUENCE (17 bytes)
+        0x01, 0x01, 0xff, // BOOLEAN TRUE
+        0x02, 0x01, 0x2a, // INTEGER 42
+        0x13, 0x08,       // IA5String (8 bytes)
+          0x54, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x21 // "Testing!"
+])
 
 // DERDecoder(test);
 // DERDecoder(test4);
@@ -409,3 +499,5 @@ const test10 = Uint8Array.from([0x02, 0x02, 0x01, 0x2A]);
 // DERDecoder(test8);
 // DERDecoder(test9);
 // DERDecoder(test10);
+// DERDecoder(test11);
+// DERDecoder(test12);
