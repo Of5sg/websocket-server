@@ -48,40 +48,31 @@ export function TLS_Extension_Reader(extensions, extensions_total_length){
 
                 separatedExtensions[extension_types[extension_type]] = extensions.slice(i + 5, i + (5 + hostName_length)).toString();
 
-                
+
                 break;
             case "max_fragment_length":
                 // https://datatracker.ietf.org/doc/html/rfc6066#section-4
-                console.log("HER ER MAXIMUM FRAGMENT LENGTH", extensions.slice(i+4, i+(4+Number(extension_length))))
                 break;
             case "client_certificate_url":
                 // https://datatracker.ietf.org/doc/html/rfc6066#section-5
-                console.log("HER ER CLIENT CERTIFICATE URL", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "trusted_ca_keys":
                 // https://datatracker.ietf.org/doc/html/rfc6066#section-6
-                console.log("HER ER TRUSTED CA KEYS", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "truncated_hmac":
                 // https://datatracker.ietf.org/doc/html/rfc6066#section-7
-                console.log("HER ER TRUNCATED HMAC", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "status_request":
                 // https://datatracker.ietf.org/doc/html/rfc6066#section-8
-                console.log("HER ER CERTIFICATE STATUS REQUEST", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 
                 break;
             case "user_mapping":
-                console.log("HER ER USER MAPPING", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "client_authz":
-                console.log("HER ER CLIENT AUTHZ", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "server_authz":
-                console.log("HER ER SERVER AUTHZ", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "cert_type":
-                console.log("HER ER CERT TYPE", extensions.slice(i+4, i+[4+Number(extension_length)]))
                 break;
             case "supported_groups":
                 let supported_groups_result = extractListField2Byte(extensions, i, supported_groups)
