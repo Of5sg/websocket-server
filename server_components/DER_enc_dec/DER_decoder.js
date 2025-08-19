@@ -401,11 +401,11 @@ const test9 = new Uint8Array([
 const test10 = Uint8Array.from([0x02, 0x02, 0x01, 0x2A]);
 
 
-DERDecoder(test);
-DERDecoder(test4);
-DERDecoder(test5);
-DERDecoder(test6);
-DERDecoder(test7);
-DERDecoder(test8);
-DERDecoder(test9);
-DERDecoder(test10);
+// DERDecoder(test);
+// DERDecoder(test4);
+// DERDecoder(test5);
+// DERDecoder(test6);
+// DERDecoder(test7);
+// DERDecoder(test8);
+// DERDecoder(test9);
+// DERDecoder(test10);
