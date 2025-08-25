@@ -3,7 +3,7 @@ import { Bits } from "../utils.js";
 
 function SequenceTypeSwitcher(type, entryData){
 
-    console.log("ENTRY DATA:", entryData);
+    // console.log("ENTRY DATA:", entryData);
 
     let resultEntry;
     let decoder = new TextDecoder("utf-8");
@@ -11,7 +11,7 @@ function SequenceTypeSwitcher(type, entryData){
     switch(type){
         // BEGINNING OF TYPE FOR LOOP
         case 0x01:  // boolean
-            console.log("TYPE:", "Boolean type");
+            console.log("TYPE:", "Boolean");
             if(entryData[0] === 0x00){
                 resultEntry = false;
             }else{
@@ -19,12 +19,12 @@ function SequenceTypeSwitcher(type, entryData){
             }
             break;
         case 0x02:  // integer
-            console.log("TYPE:", "integer type");
+            console.log("TYPE:", "integer");
             let temp = 0n;
             // i is incrementer, y is multiplier
             for(let i = 0, y = entryData.length; i < entryData.length && y > 0; i++, y--){
                 let shift = 8 * (y - 1);
-                temp = temp | BigInt(entryData[i] << shift);
+                temp |= BigInt(entryData[i] << shift);
             }
             resultEntry = temp;
             break;
@@ -32,7 +32,7 @@ function SequenceTypeSwitcher(type, entryData){
             console.log("TYPE:", "bit string");
             break;
         case 0x04:  // octet string
-            console.log("TYPE:", "octet type");
+            console.log("TYPE:", "octet");
             if(entryData[0] === undefined){
                 resultEntry = null;
             }
@@ -43,20 +43,162 @@ function SequenceTypeSwitcher(type, entryData){
                 resultEntry = null;
             }else{
                 resultEntry = "error?"
-            }
+            };
             break;
         case 0x06: // object identifier
             console.log("TYPE:", "object identifier");
             break;
-        case 0x09:  // real value
+        case 0x09:  // REAL value
+            // se seksjon 8.5 i https://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf
             console.log("TYPE:", "REAL");
+            console.log(entryData);
+
+            let encoding = (entryData[0] & 0b10000000) >> 7; // Binary encoding = 1, not Binary encoding = 0, see switch below
+            let sign = (entryData[0] & 0b01000000) >> 6; // S, also used in switch below
+            let base_encoding = (entryData[0] & 0b00110000) >> 4; // Value of base B, see switch below
+            let scaling_factor = (entryData[0] & 0b00001100) >> 2; // Binary scaling factor F, encoded as an unsigned binary
+            let exponent_format = (entryData[0] & 0b00000011); // format of the exponent, see switch below
+            let REALValue = 0;
+
+            switch(encoding){
+                case 0b1:
+                    // Binary encoding
+                    encoding = "Binary";
+                    break;
+                case 0b0:
+                    if(sign === 0 && entryData.length !== 0){
+                        // Decimal encoding
+                        encoding = "Decimal";
+                    }else if (sign === 1 || entryData.length === 0){
+                        // special real value
+                        encoding = "Special";
+                        // see 8.5.5 of https://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf
+                    };
+                    break;
+            };
+
+            if(encoding === "Binary"){
+
+                // not really relevant for DER_Decoding, as everything should be base 2
+                switch(base_encoding){
+                    case 0b00:
+                        base_encoding = 2;
+                        break;
+                    case 0b01:
+                        base_encoding = 8;
+                        console.error("ERROR: noncompliant. base 8 not allowed in DER");
+                        break;
+                    case 0b10:
+                        base_encoding = 16;
+                        console.error("ERROR: noncompliant. base 16 not allowed in DER");
+                        break;    
+                    default:
+                        base_encoding = null;
+                        break;
+                };
+
+                let position = 0;
+                let exponent = 0n;
+
+                switch(exponent_format){
+                    case 0b00:
+                        /**if bits 2 to 1 are 00, then the second 
+                         * contents octet encodes the value of the 
+                         * exponent as a two's complement binary number; */
+                        console.log(Bits(entryData[1], 8))
+                        if(((BigInt(entryData[1]) & 0b10000000n) >> 7n) === 1n){
+                            exponent = BigInt(entryData[1]) - (2n ** 8n);
+                        }else{
+                            exponent = BigInt(entryData[1]);
+                        };
+                        position = 2;
+                        break;
+                    case 0b01:
+                        /**if bits 2 to 1 are 01, then the second and 
+                         * third contents octets encode the value of 
+                         * the exponent as a two's complement binary number; */
+                        if(((BigInt(entryData[1]) & 0b10000000n) >> 7n) === 1n){
+                            exponent = (BigInt(entryData[1]) << 8n | BigInt(entryData[2])) - (2n ** 16n);
+                        }else{
+                            exponent = BigInt(entryData[1]) << 8n | BigInt(entryData[2]);
+                        };
+                        position = 3;
+                        break;
+                    case 0b10:
+                        /**if bits 2 to 1 are 10, then 
+                         * the second, third and fourth contents octets 
+                         * encode the value of the exponent as a two's 
+                         * complement binary number; */
+                        if(((BigInt(entryData[1]) & 0b10000000n) >> 7n) === 1n){
+                        exponent = BigInt(entryData[1]) << 16n | BigInt(entryData[2]) << 8n | BigInt(entryData[3]) - (2n ** 24n);
+                        }else{
+                        exponent = BigInt(entryData[1]) << 16n | BigInt(entryData[2]) << 8n | BigInt(entryData[3]);
+                        };
+                        position = 4
+                        break;
+                    case 0b11:
+                        /**if bits 2 to 1 are 11, then the second contents 
+                         * octet encodes the number of octets, X say, 
+                         * (as an unsigned binary number) used to encode the 
+                         * value of the exponent, and the third up to the 
+                         * (X plus 3) th (inclusive) contents octets encode 
+                         * the value of the exponent as a two's complement 
+                         * binary number; the value of X shall be at least 
+                         * one; the first nine bits of the transmitted exponent 
+                         * shall not be all zeros or all ones */
+                        let signedExponent = false;
+                        if(((BigInt(entryData[1]) & 0b10000000n) >> 7n) === 1n){
+                            signedExponent = true;
+                        };
+                        let exponent_length = entryData[1];
+                        // i is incrementor, y is multiplier
+                        position = 2;
+                        for (let i = 0, y = exponent_length; i < exponent_length; i++, y--){
+                            const shift  = BigInt(8 * (y - 1));
+                            exponent |= BigInt(entryData[i + 2]) << shift;
+                            position++;
+                        };
+                        if(signedExponent === true){
+                            exponent = exponent - (2n ** BigInt(exponent_length));
+                        }
+
+                        break;
+                };
+
+                let mantissa = 0n;
+
+                // i is incrementor, y is multiplier, again
+                for (let i = position, y = (entryData.length - position); i < entryData.length; i++, y--){
+                    const shift  = BigInt(8 * (y - 1));
+                    mantissa |= BigInt(entryData[i]) << shift;
+                };
+
+                REALValue = (Number(mantissa) * base_encoding ** Number(exponent)) * 2 ** (-scaling_factor);
+
+                resultEntry = REALValue;
+
+            }else if (encoding === "Decimal"){
+                // not relevant for DER-decoder
+                console.log("DECIMAL ENCODING:", "NOT IMPLEMENTED");
+
+            }else if (encoding === "Special"){
+
+                if(entryData[0] === 0b01000000){
+                    resultEntry = `\u221E`;         // PLUS-INFINITY
+                }else if(entryData[0] === 0b01000001){
+                    resultEntry = `\u2212\u221E`;   // MINUS-INFINITY
+                }else if(entryData.length === 0){
+                    resultEntry = null;             // NULL
+                };
+            };
+            
             break;
         case 0x0C:  // UTF8String
             console.log("TYPE:", "UTF8String");
             resultEntry = decoder.decode(entryData);
             break;
         case 0x13:  // Printable string
-            console.log("TYPE:", "Printable type");
+            console.log("TYPE:", "Printable");
             resultEntry = decoder.decode(entryData);
             break;
         case 0x16:  // IA5String
@@ -93,7 +235,7 @@ function SequenceTypeSwitcher(type, entryData){
             };
             break;
         case 0x30:  // SEQUENCE
-            console.log("TYPE:", "Sequence type");
+            console.log("TYPE:", "Sequence");
             const resultSequence = []; 
             // i skips from entry to entry, per iteration, current position tracks the position inside each entry section
             for (let i = 0, currentPosition = 0; i < entryData.length; i = currentPosition){
@@ -102,12 +244,10 @@ function SequenceTypeSwitcher(type, entryData){
                 let contentLength = 0n;
                 if(((entryData[i + 1] & 0b10000000) >> 7) === 0){
                     // short form
-                    console.log("SHORT FORM");
                     contentLength = entryData[i+1];
                     currentPosition++;
                 }else{
                     // long form
-                    console.log("LONG FORM")
                     let lengthOfLengthBytes = entryData[i + 1] & 0b01111111;
                     currentPosition += lengthOfLengthBytes + 1;
                     // y is incrementer, x is multiplier
@@ -123,8 +263,11 @@ function SequenceTypeSwitcher(type, entryData){
             };
             resultEntry = resultSequence;
             break;
+        case 0x31: // SET OF
+            console.log("TYPE:", "SET OF");
+            break;
         case 0xA0:  // context-specific
-            console.log("TYPE:", "context-specific type");
+            console.log("TYPE:", "context-specific");
             break;
         default:
             console.error("TYPE:", "Unrecognized entry type:", type);
@@ -135,7 +278,6 @@ function SequenceTypeSwitcher(type, entryData){
     return resultEntry;
 
 };
-
 
 
 export function DERDecoder(data){
@@ -333,7 +475,6 @@ Primitive/Constructed:{
         };
 
     };
-
     
     switch(der_object.tag){
         // BEGINNING OF TAG SWITCH
@@ -389,7 +530,6 @@ Primitive/Constructed:{
                 entryData = der_object.content.slice(currentPosition, currentPosition + Number(contentLength));
 
                 resultSequence.push(SequenceTypeSwitcher(type, entryData));
-                console.log("content length:", contentLength)
                 currentPosition += Number(contentLength);
                 console.log("result sequence", resultSequence)
                 console.log("------------------------------------")
@@ -407,10 +547,69 @@ Primitive/Constructed:{
             }
             der_object.content = temp;
             break;
-        default: 
-            console.error("Unrecognized tag");
-            console.log(der_object.tag);
+        case "BIT STRING": // bit string
+            console.log("TYPE:", "bit string");
             break;
+        // case 0x04:  // octet string
+        //     console.log("TYPE:", "octet");
+        //      // HER MÅ DET FIKSES
+        //     if(entryData[0] === undefined){
+        //         resultEntry = null;
+        //     }
+        //     break;
+        // case "NULL": // NULL
+        //     console.log("TYPE:", "NULL");
+        //     if (entryData.length === 0){
+        //         resultEntry = null;
+        //     }else{
+        //         resultEntry = "error?"
+        //     }
+        //     break;
+        // case "UTF8String":  // UTF8String
+        //     console.log("TYPE:", "UTF8String");
+        //     resultEntry = decoder.decode(entryData);
+        //     break;
+        // case "PrintableString":  // Printable string
+        //     console.log("TYPE:", "Printable");
+        //     resultEntry = decoder.decode(entryData);
+        //     break;
+        // case "IA5String":  // IA5String
+        //     console.log("TYPE:", "IA5String");
+        //     resultEntry = decoder.decode(entryData);
+        //     break;
+        // case "UTCTime": // UTC Time
+        //     console.log("TYPE:", "UTC Time");
+        //     let tempUTCTime = (decoder.decode(entryData));
+        //     resultEntry = {
+        //         year: Number(tempUTCTime.slice(0, 2)), 
+        //         month: Number(tempUTCTime.slice(2, 4)), 
+        //         day: Number(tempUTCTime.slice(4, 6)), 
+        //         hour: Number(tempUTCTime.slice(6, 8)), 
+        //         minute: Number(tempUTCTime.slice(8, 10)), 
+        //         second: Number(tempUTCTime.slice(10, 12))
+        //     };
+        //     break;
+        // case "BMPString":  // BMPString
+        //     console.log("TYPE:", "BMPString");
+        //     const UTF16Decoder = new TextDecoder("utf-16be");
+        //     resultEntry = UTF16Decoder.decode(entryData);
+        //     break;
+        // case "GeneralizedTime": // generalized time
+        //     console.log("TYPE:", "GENERALIZED TIME");
+        //     let tempGeneralizedTime = (decoder.decode(entryData));
+        //     resultEntry = {
+        //         year: Number(tempGeneralizedTime.slice(0, 4)), 
+        //         month: Number(tempGeneralizedTime.slice(4, 6)), 
+        //         day: Number(tempGeneralizedTime.slice(6, 8)), 
+        //         hour: Number(tempGeneralizedTime.slice(8, 10)), 
+        //         minute: Number(tempGeneralizedTime.slice(10, 12)), 
+        //         second: Number(tempGeneralizedTime.slice(12, 14))
+        //     };
+        //     break;
+        // default: 
+        //     console.error("Unrecognized tag");
+        //     console.log(der_object.tag);
+        //     break;
         // END OF TAG SWITCH
     };
 
@@ -419,85 +618,3 @@ Primitive/Constructed:{
     // END OF DER_DECODER FUNCTION
 
 };
-
-
-const test = Buffer.from("303A310B300906035504061302555331133011060355040A130A446967694365727420496E63311830160603550403130F7777772E6578616D706C652E636F6D", "hex");
-const test4 = Buffer.from("308002010502010A0000", "hex");
-const test5 = Buffer.from("3082013004820128" + "AA".repeat(296), "hex");
-const test6 = Buffer.from("0101FF", "hex");
-const test7 = Buffer.from("010100", "hex");
-const test8 = Buffer.from("30090101FF02012A0400", "hex");
-
-const test9 = Buffer.from([
-
-  0x30, 0x53,
-
-  0x01, 0x01, 0xFF,
-
-  0x02, 0x01, 0x2A,
-
-  0x03, 0x02, 0x00, 0xAA,
-
-  0x04, 0x05, 0x68, 0x65, 0x6C, 0x6C, 0x6F,
-
-  0x05, 0x00,
-
-  0x06, 0x06, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D,
-
-  0x0C, 0x05, 0x77, 0x6F, 0x72, 0x6C, 0x64,
-
-  0x13, 0x04, 0x54, 0x65, 0x73, 0x74,
-
-  0x16, 0x11, 0x65, 0x6D, 0x61, 0x69, 0x6C, 0x40,
-  0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x2E,
-  0x63, 0x6F, 0x6D,
-
-  0x17, 0x0D, 0x32, 0x33, 0x30, 0x38, 0x31, 0x36,
-  0x31, 0x32, 0x30, 0x30, 0x30, 0x30, 0x5A,
-
-  0x18, 0x0F, 0x32, 0x30, 0x32, 0x35, 0x30, 0x38,
-  0x31, 0x36, 0x31, 0x32, 0x30, 0x30, 0x30, 0x30,
-  0x5A
-]);
-
-const test10 = Buffer.from([0x02, 0x02, 0x01, 0x2A]);
-
-const test11 = Buffer.from([
-  0x30, 0x32,             // SEQUENCE (42 bytes)
-    0x02, 0x01, 0x01,     // INTEGER 1
-    0x0c, 0x06,           // UTF8String (6 bytes)
-      0x4a, 0x6f, 0x68, 0x6e, 0x20, 0x44, // "John D"
-    0x01, 0x01, 0xff,     // BOOLEAN TRUE
-    0x09, 0x03,           // REAL (3 bytes)
-      0x80, 0x00, 0x00,   // 0.0 (encoded as binary float)
-    0x18, 0x0f,           // GeneralizedTime (15 bytes)
-      0x32, 0x30, 0x32, 0x35, 0x30, 0x38, 0x31, 0x39, 
-      0x30, 0x39, 0x35, 0x32, 0x30, 0x30, 0x5a, // "20250819095200Z"
-    0x30, 0x0b,           // SEQUENCE (11 bytes)
-      0x02, 0x01, 0x2a,   // INTEGER 42
-      0x13, 0x06,         // printable (6 bytes)
-        0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x21  // "Hello!"
-]);
-const test12 = Buffer.from([
-  0x30, 0x1f,             // SEQUENCE (31 bytes)
-    0x02, 0x01, 0x05,     // INTEGER 5
-    0x30, 0x1a,           // SEQUENCE (26 bytes)
-      0x0c, 0x05,         // UTF8String (5 bytes)
-        0x41, 0x6c, 0x69, 0x63, 0x65, // "Alice"
-      0x30, 0x11,         // SEQUENCE (17 bytes)
-        0x01, 0x01, 0xff, // BOOLEAN TRUE
-        0x02, 0x01, 0x2a, // INTEGER 42
-        0x13, 0x08,       // IA5String (8 bytes)
-          0x54, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x21 // "Testing!"
-])
-
-// DERDecoder(test);
-// DERDecoder(test4);
-// DERDecoder(test5);
-// DERDecoder(test6);
-// DERDecoder(test7);
-// DERDecoder(test8);
-// DERDecoder(test9);
-// DERDecoder(test10);
-// DERDecoder(test11);
-// DERDecoder(test12);
